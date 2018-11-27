@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Test1</title>
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius = 10;
+var centerX = canvas.width/2;
+var centerY = canvas.height-30;
+var dx = 0;
+var dy = 0;
+
+document.addEventListener("mousemove", mouseMoveHandler, false);
+
+function mouseMoveHandler(e) {
+	var relativeX = e.clientX - canvas.offsetLeft;
+	var relativeY = e.clientY - canvas.offsetTop;
+        	if(relativeX > 0 && relativeX < canvas.width) {
+            		dx = (relativeX - centerX)/10;
+			centerX += dx;
+		}
+		if(relativeY > 0 && relativeY < canvas.height) {		
+			dy = (relativeY - centerY)/10;
+			centerY += dy;
+        	}
+    }
+
+function drawBall() {
+	ctx.beginPath();
+	ctx.arc(centerX, centerY, ballRadius, 0, Math.PI*2);
+	ctx.fillStyle = "#0095DD";
+	ctx.fill();
+	ctx.closePath();
+}
+	
+function draw() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawBall();
+	requestAnimationFrame(draw);
+}
+
+draw();
+
+</script>
+
+</body>
+</html>
