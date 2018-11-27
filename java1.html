@@ -2,48 +2,95 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Test1</title>
+    <title>Test2</title>
     <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
 </head>
 <body>
 
-<canvas id="myCanvas" width="480" height="320"></canvas>
+<canvas id="myCanvas" width="1853" height="951"></canvas>
 
 <script>
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-var ballRadius = 10;
-var centerX = canvas.width/2;
-var centerY = canvas.height-30;
-var dx = 0;
-var dy = 0;
+var bigballRadius = 10;
+var smallballRadius = 3;
+var speed = 1/20;
+var speed2 = 1;
+var relativeX=0;
+var relativeY=0;
+var spacePressed=false;
+
 
 document.addEventListener("mousemove", mouseMoveHandler, false);
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
 
 function mouseMoveHandler(e) {
-	var relativeX = e.clientX - canvas.offsetLeft;
-	var relativeY = e.clientY - canvas.offsetTop;
-        	if(relativeX > 0 && relativeX < canvas.width) {
-            		dx = (relativeX - centerX)/10;
-			centerX += dx;
-		}
-		if(relativeY > 0 && relativeY < canvas.height) {		
-			dy = (relativeY - centerY)/10;
-			centerY += dy;
-        	}
+	if(e.clientX - canvas.offsetLeft > 0 && e.clientX - canvas.offsetLeft < canvas.width){
+		relativeX = e.clientX - canvas.offsetLeft;
+	}
+	if(e.clientY - canvas.offsetTop > 0 && e.clientY - canvas.offsetTop < canvas.height){
+		relativeY = e.clientY - canvas.offsetTop;
+	}
     }
 
-function drawBall() {
-	ctx.beginPath();
-	ctx.arc(centerX, centerY, ballRadius, 0, Math.PI*2);
-	ctx.fillStyle = "#0095DD";
-	ctx.fill();
-	ctx.closePath();
+    function keyDownHandler(e) {
+        if(e.keyCode == 32) {
+            spacePressed = true;
+        }
+    }
+    function keyUpHandler(e) {
+        if(e.keyCode == 32) {
+            rightPressed = false;
+	}
+    }
+
+class ball{
+	constructor(x,y,r){
+		this.x=x;
+		this.y=y;
+		this.rayon=r;
+	}
+	drawBall(){
+		ctx.beginPath();
+		ctx.arc(this.x,this.y,this.rayon, 0, Math.PI*2);
+		ctx.fillStyle = "#0095DD";
+		ctx.fill();
+		ctx.closePath();
+	}
+	moveBall(){
+		this.dx = (relativeX - this.x)*speed;
+		this.dy = (relativeY - this.y)*speed;
+		if(this.x > 0 && this.x < canvas.width){
+			this.x += this.dx;
+		}
+		if(this.y > 0 && this.y < canvas.height) {
+			this.y += this.dy;	
+		}
+	}
+	movesmallBall(){
+		this.x+=speed2;
+		this.y+=speed2;
+	}
+	shoot(){
+		if (spacePressed){
+			this.baby = new ball(this.x,this.y,smallballRadius);
+			this.baby.drawBall();
+			this.baby.movesmallBall();
+		}
+	}
+
 }
+
+
+let B = new ball(canvas.width/2,canvas.height/2,bigballRadius);
+
 	
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	drawBall();
+	B.drawBall();
+	B.moveBall();
+	B.shoot();
 	requestAnimationFrame(draw);
 }
 
