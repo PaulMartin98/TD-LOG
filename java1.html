@@ -14,8 +14,8 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 var bigballRadius = 10;
 var smallballRadius = 3;
-var speed = 1/20;
-var speed2 = 1;
+var speed = 1/30;
+var speed2 = 30;
 var relativeX=0;
 var relativeY=0;
 var spacePressed=false;
@@ -41,7 +41,7 @@ function mouseMoveHandler(e) {
     }
     function keyUpHandler(e) {
         if(e.keyCode == 32) {
-            rightPressed = false;
+            spacePressed = false;
 	}
     }
 
@@ -50,6 +50,7 @@ class ball{
 		this.x=x;
 		this.y=y;
 		this.rayon=r;
+		this.isbaby=false;
 	}
 	drawBall(){
 		ctx.beginPath();
@@ -69,18 +70,24 @@ class ball{
 		}
 	}
 	movesmallBall(){
-		this.x+=speed2;
-		this.y+=speed2;
+		this.x+=speed2*this.anglex/this.norm;
+		this.y+=speed2*this.angley/this.norm;
+	}
+	createbaby(){
+		this.baby = new ball(this.x,this.y,smallballRadius);
+		this.isbaby = true;
+		this.baby.norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
+		this.baby.anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
+		this.baby.angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
 	}
 	shoot(){
-		if (spacePressed){
-			this.baby = new ball(this.x,this.y,smallballRadius);
+		if (this.isbaby){
 			this.baby.drawBall();
 			this.baby.movesmallBall();
 		}
 	}
-
 }
+
 
 
 let B = new ball(canvas.width/2,canvas.height/2,bigballRadius);
@@ -90,6 +97,9 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	B.drawBall();
 	B.moveBall();
+	if (spacePressed){
+		B.createbaby();
+	}
 	B.shoot();
 	requestAnimationFrame(draw);
 }
