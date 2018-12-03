@@ -51,6 +51,7 @@ class ball{
 		this.y=y;
 		this.rayon=r;
 		this.isbaby=false;
+		this.nbaby=[];
 	}
 	drawBall(){
 		ctx.beginPath();
@@ -74,16 +75,19 @@ class ball{
 		this.y+=speed2*this.angley/this.norm;
 	}
 	createbaby(){
-		this.baby = new ball(this.x,this.y,smallballRadius);
+		this.nbaby.push(new ball(this.x,this.y,smallballRadius));
 		this.isbaby = true;
-		this.baby.norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
-		this.baby.anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
-		this.baby.angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
+		this.nbaby[this.nbaby.length-1].norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
+		this.nbaby[this.nbaby.length-1].anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
+		this.nbaby[this.nbaby.length-1].angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
 	}
 	shoot(){
-		if (this.isbaby){
-			this.baby.drawBall();
-			this.baby.movesmallBall();
+		if (this.nbaby.length>0){
+			var i;
+			for(i=0;i<this.nbaby.length;i++){
+				this.nbaby[i].drawBall();
+				this.nbaby[i].movesmallBall();
+			}
 		}
 	}
 }
