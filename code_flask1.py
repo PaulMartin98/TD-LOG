@@ -8,6 +8,6 @@ socketio = SocketIO(app)
 if __name__ == '__main__':
     socketio.run(app)
 
-@socketio.on('message')
+@socketio.on('my event')
 def handle_message(message):
-    print('received message: ' + message)
+    print('new user connected ! ')
