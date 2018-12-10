@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<canvas id="myCanvas" width="1853" height="951"></canvas>
+<canvas id="myCanvas" width="10000" height="5000"></canvas>
 
 <script>
 var canvas = document.getElementById("myCanvas");
@@ -21,18 +21,13 @@ var relativeY=0;
 var spacePressed=false;
 var once=true;
 
-
 document.addEventListener("mousemove", mouseMoveHandler, false);
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 function mouseMoveHandler(e) {
-	if(e.clientX - canvas.offsetLeft > 0 && e.clientX - canvas.offsetLeft < canvas.width){
-		relativeX = e.clientX - canvas.offsetLeft;
-	}
-	if(e.clientY - canvas.offsetTop > 0 && e.clientY - canvas.offsetTop < canvas.height){
-		relativeY = e.clientY - canvas.offsetTop;
-	}
+	relativeX = e.clientX+window.pageXOffset;
+	relativeY = e.clientY+window.pageYOffset;
     }
 
     function keyDownHandler(e) {
@@ -54,12 +49,11 @@ class ball{
 		this.x=x;
 		this.y=y;
 		this.rayon=r;
-		this.isbaby=false;
 		this.nbaby=[];
 	}
-	drawBall(){
+	drawBall(x,y){
 		ctx.beginPath();
-		ctx.arc(this.x,this.y,this.rayon, 0, Math.PI*2);
+		ctx.arc(x,y,this.rayon, 0, Math.PI*2);
 		ctx.fillStyle = "#0095DD";
 		ctx.fill();
 		ctx.closePath();
@@ -67,11 +61,15 @@ class ball{
 	moveBall(){
 		this.dx = (relativeX - this.x)*speed;
 		this.dy = (relativeY - this.y)*speed;
+		relativeX += this.dx;
+		relativeY += this.dy;
 		if(this.x > 0 && this.x < canvas.width){
-			this.x += this.dx;
+			this.x = window.pageXOffset+window.innerWidth/2;
+			scrollBy(this.dx,0);
 		}
 		if(this.y > 0 && this.y < canvas.height) {
-			this.y += this.dy;	
+			this.y = window.pageYOffset+window.innerHeight/2;
+			scrollBy(0,this.dy);	
 		}
 	}
 	movesmallBall(){
@@ -80,7 +78,6 @@ class ball{
 	}
 	createbaby(){
 		this.nbaby.push(new ball(this.x,this.y,smallballRadius));
-		this.isbaby = true;
 		this.nbaby[this.nbaby.length-1].norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
 		this.nbaby[this.nbaby.length-1].anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
 		this.nbaby[this.nbaby.length-1].angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
@@ -89,7 +86,7 @@ class ball{
 		if (this.nbaby.length>0){
 			var i;
 			for(i=0;i<this.nbaby.length;i++){
-				this.nbaby[i].drawBall();
+				this.nbaby[i].drawBall(this.nbaby[i].x,this.nbaby[i].y);
 				this.nbaby[i].movesmallBall();
 			}
 		}
@@ -103,7 +100,7 @@ let B = new ball(canvas.width/2,canvas.height/2,bigballRadius);
 	
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	B.drawBall();
+	B.drawBall(B.x,B.y);
 	B.moveBall();
 	if (spacePressed){
 		B.createbaby();
