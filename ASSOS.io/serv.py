@@ -45,8 +45,6 @@ def handle_move(id,vx,vy):
 def handle_shoot(id,vx,vy):
 	print('shoot !',id)
 	bullet_id = random.randint(100,200)
-	# v0 = sqrt(vx**2 + vy**2)
-
 	bullets[bullet_id] = {"x" :players[id]["x"],
 	"y" : players[id]["y"], "vx" : vx ,"vy" : vy }
 
@@ -64,8 +62,7 @@ def players_update(last_update):
 
 @socketio.on('request_frame')
 def handle_client_request(id):
-	# print('request',id)
-	# print(players)
+	
 	players_update(last_update)
 	emit('update_pos',{"x" : players[id]["x"],"y" : players[id]["y"] } )
 	emit('update',{"players" : players,"bullets" : bullets} )

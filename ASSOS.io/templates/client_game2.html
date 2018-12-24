@@ -6,17 +6,6 @@
   <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
 </head>
 
-<!-- <style>
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0px;
-      border: 0;
-      overflow: hidden; /*  Disable scrollbars */
-      display: block;  /* No floating content on sides */
-    }
-    </style> -->
-
 <body>
 
   <canvas id="myCanvas" style="position:absolute; left:0px; top:0px;"></canvas>
@@ -34,10 +23,7 @@
   var bigballRadius = 10;
   var vmax = 1000 ;
   var smallballRadius = 3;
-  // var speed = 1/30;
-  // var speed2 = 30;
-  // var relativeX=0;
-  // var relativeY=0;
+
   var spacePressed=false;
   var once=true;
   var quadwidth=2;
@@ -133,41 +119,9 @@
       ctx.fill();
       ctx.closePath();
     }
-    // moveBall(){
-    // 	this.dx = (relativeX - this.x)*speed;
-    // 	this.dy = (relativeY - this.y)*speed;
-    // 	relativeX += this.dx;
-    // 	relativeY += this.dy;
-    // 	if(this.x > 0 && this.x < canvas.width){
-    // 		this.x = window.pageXOffset+window.innerWidth/2;
-    // 		scrollBy(this.dx,0);
-    // 	}
-    // 	if(this.y > 0 && this.y < canvas.height) {
-    // 		this.y = window.pageYOffset+window.innerHeight/2;
-    // 		scrollBy(0,this.dy);
-    // 	}
-    // }
-    // movesmallBall(){
-    // 	this.x+=speed2*this.anglex/this.norm;
-    // 	this.y+=speed2*this.angley/this.norm;
-    // }
-    // createbaby(){
-    // 	this.nbaby.push(new ball(this.x,this.y,smallballRadius));
-    // 	this.nbaby[this.nbaby.length-1].norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
-    // 	this.nbaby[this.nbaby.length-1].anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
-    // 	this.nbaby[this.nbaby.length-1].angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
-    // }
-    // shoot(){
-    // 	if (this.nbaby.length>0){
-    // 		var i;
-    // 		for(i=0;i<this.nbaby.length;i++){
-    // 			this.nbaby[i].drawBall(this.nbaby[i].x,this.nbaby[i].y);
-    // 			this.nbaby[i].movesmallBall();
-    // 		}
+
   }
 
-  // let B = new ball(canvas.width/2,canvas.height/2,bigballRadius);
-  //quadrillage();
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -194,12 +148,6 @@
       }
 
     }
-
-    // if (spacePressed){
-    // 	B.createbaby();
-    // }
-    // B.shoot();
-    // spacePressed=false;
 
     requestAnimationFrame(draw);
   }
