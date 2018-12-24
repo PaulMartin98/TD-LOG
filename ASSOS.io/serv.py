@@ -50,7 +50,6 @@ def handle_shoot(id,vx,vy):
 
 def players_update(last_update):
 	server_clock = time.clock()
-	print(bullets)
 	for id in players:
 		players[id]["x"] = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
 		players[id]["y"] = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
@@ -62,7 +61,7 @@ def players_update(last_update):
 
 @socketio.on('request_frame')
 def handle_client_request(id):
-	
+
 	players_update(last_update)
 	emit('update_pos',{"x" : players[id]["x"],"y" : players[id]["y"] } )
 	emit('update',{"players" : players,"bullets" : bullets} )
