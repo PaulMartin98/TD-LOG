@@ -17,15 +17,19 @@ def index():
 @socketio.on('message')
 def handle_message(msg):
 	print(msg)
-	send(msg, broadcast=True)
+	post = { "message" : msg, "id": 10}
+	send(post, broadcast=True)
 
 @socketio.on('pingg')
 def handle_pingg(json):
 	print('ping')
 	# send('user ' + json["user"] + 'pinged for the '
 	# + json["nb_ping"] + " time", broadcast=True)
-	send('user '+str(json["id"]) + ' : pong ' + str(json["vping"]),
-	broadcast = True)
+	msg = 'user '+str(json["id"]) + ' : pong ' + str(json["vping"])
+	post = {}
+	post['message'] = msg
+	post['id'] = 10
+	send(post , broadcast = True)
 
 @socketio.on('authentification')
 def handler_auth():
@@ -39,4 +43,5 @@ messages_sent = {}
 
 
 if __name__ == '__main__':
+	app.debug = True
 	socketio.run(app, host='localhost', port=5000)

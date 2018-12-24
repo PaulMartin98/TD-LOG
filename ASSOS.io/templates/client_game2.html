@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Test2</title>
+  <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+
+<!-- <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+      border: 0;
+      overflow: hidden; /*  Disable scrollbars */
+      display: block;  /* No floating content on sides */
+    }
+    </style> -->
+
+<body>
+
+  <canvas id="myCanvas" style="position:absolute; left:0px; top:0px;"></canvas>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+  <script>
+  var canvas = document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");
+  rect = canvas.getBoundingClientRect();
+
+  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+
+  var bigballRadius = 10;
+  var vmax = 1000 ;
+  var smallballRadius = 3;
+  // var speed = 1/30;
+  // var speed2 = 30;
+  // var relativeX=0;
+  // var relativeY=0;
+  var spacePressed=false;
+  var once=true;
+  var quadwidth=2;
+  var quadspace=50;
+
+  var personalX = 0 ; var vx ;
+  var personalY = 0 ; var vy ;
+  var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
+
+  var width = canvas.width ; var height = canvas.height ;
+
+  var id = -1 ;
+  var socket = io.connect('http://127.0.0.1:5000');
+
+  client_players = {} ;
+  client_bullets = {} ;
+
+  socket.on('connect', function(){
+    socket.emit('new_connection');
+  });
+  socket.on('authentification',function(ID){
+    id = ID ;
+  });
+  socket.on('update',function(game){
+    client_players = game["players"] ;
+    client_bullets = game["bullets"] ;
+  });
+  socket.on('update_pos',function(pos){
+    personalX = pos["x"] ; personalY = pos["y"] ;
+  });
+
+  document.addEventListener("mousemove", mouseMoveHandler, false);
+  document.addEventListener("keydown", keyDownHandler, false);
+  document.addEventListener("keyup", keyUpHandler, false);
+
+
+  function quadrillage(){
+  	for(var nx=Math.floor((personalX-width/2)/quadspace);
+    nx<=Math.floor((personalX+width/2)/quadspace);nx+=1){
+  		ctx.beginPath();
+  		ctx.rect(nx*quadspace-personalX+width/2, 0, quadwidth, canvas.height);
+  		ctx.fillStyle = "#FF0000";
+  		ctx.fill();
+  		ctx.closePath();
+  	}
+    for(var ny=Math.floor((personalY-height/2)/quadspace);
+    ny<=Math.floor((personalY+height/2)/quadspace);ny+=1){
+      ctx.beginPath();
+      ctx.rect(0, ny*quadspace-personalY+height/2, canvas.width, quadwidth);
+      ctx.fillStyle = "#FF0000";
+      ctx.fill();
+      ctx.closePath();
+    }
+  }
+
+  function mouseMoveHandler(e) {
+    relativeX = e.clientX+window.pageXOffset;
+    relativeY = e.clientY+window.pageYOffset;
+    vx = relativeX - width/2 ;
+    vy = relativeY - height/2 ;
+    v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
+    if (v0 > vmax){
+      vx = vx*vmax/v0 ; vy = vy*vmax/v0 ;
+      }
+    socket.emit('client_speed_update', id, vx, vy ) ;
+  }
+
+  function keyDownHandler(e) {
+    if(e.keyCode == 32 && once) {
+      spacePressed = true;
+      once=false;
+      socket.emit('client_shoot',id,vx*vmax/v0,vy*vmax/v0);
+    }
+  }
+  function keyUpHandler(e) {
+    if(e.keyCode == 32) {
+      spacePressed = false;
+      once=true;
+    }
+  }
+
+  class ball{
+    constructor(x,y,r){
+      this.x=x;
+      this.y=y;
+      this.rayon=r;
+      this.nbaby=[];
+    }
+    drawBall(){
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.rayon, 0, Math.PI*2);
+      ctx.fillStyle = "#0095DD";
+      ctx.fill();
+      ctx.closePath();
+    }
+    // moveBall(){
+    // 	this.dx = (relativeX - this.x)*speed;
+    // 	this.dy = (relativeY - this.y)*speed;
+    // 	relativeX += this.dx;
+    // 	relativeY += this.dy;
+    // 	if(this.x > 0 && this.x < canvas.width){
+    // 		this.x = window.pageXOffset+window.innerWidth/2;
+    // 		scrollBy(this.dx,0);
+    // 	}
+    // 	if(this.y > 0 && this.y < canvas.height) {
+    // 		this.y = window.pageYOffset+window.innerHeight/2;
+    // 		scrollBy(0,this.dy);
+    // 	}
+    // }
+    // movesmallBall(){
+    // 	this.x+=speed2*this.anglex/this.norm;
+    // 	this.y+=speed2*this.angley/this.norm;
+    // }
+    // createbaby(){
+    // 	this.nbaby.push(new ball(this.x,this.y,smallballRadius));
+    // 	this.nbaby[this.nbaby.length-1].norm=Math.sqrt(Math.pow((relativeX-this.x)/(relativeY-this.y),2)+1);
+    // 	this.nbaby[this.nbaby.length-1].anglex = (relativeX-this.x)/Math.abs(relativeY-this.y);
+    // 	this.nbaby[this.nbaby.length-1].angley = (relativeY-this.y)/Math.abs(relativeY-this.y);
+    // }
+    // shoot(){
+    // 	if (this.nbaby.length>0){
+    // 		var i;
+    // 		for(i=0;i<this.nbaby.length;i++){
+    // 			this.nbaby[i].drawBall(this.nbaby[i].x,this.nbaby[i].y);
+    // 			this.nbaby[i].movesmallBall();
+    // 		}
+  }
+
+  // let B = new ball(canvas.width/2,canvas.height/2,bigballRadius);
+  //quadrillage();
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    quadrillage();
+    socket.emit('request_frame',id);
+    for (var id_key in client_players) {
+      id_key = Number(id_key);
+      var x = client_players[id_key]["x"];
+      var y = client_players[id_key]["y"];
+      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 ){
+        let B = new ball(x-personalX+width/2,y-personalY+height/2,bigballRadius);
+        B.drawBall();
+      }
+
+    }
+
+    for (var id_key in client_bullets) {
+      id_key = Number(id_key);
+      var x = client_bullets[id_key]["x"];
+      var y = client_bullets[id_key]["y"];
+      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 ){
+        let B = new ball(x-personalX+width/2,y-personalY+height/2,smallballRadius);
+        B.drawBall();
+      }
+
+    }
+
+    // if (spacePressed){
+    // 	B.createbaby();
+    // }
+    // B.shoot();
+    // spacePressed=false;
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+</script>
+
+</body>
+</html>

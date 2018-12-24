@@ -32,8 +32,8 @@
 			socket.emit('pingg',{"id" : id, "vping" : val_ping});
 		});
 
-		socket.on('message', function(msg){
-			$('#messages').append('<li>'+msg+'</li>');
+		socket.on('message', function(post){
+			$('#messages').append('<li>'+post["message"]+'</li>');
 		});
 	});
 		</script>
