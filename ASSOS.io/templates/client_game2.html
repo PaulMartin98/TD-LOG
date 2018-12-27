@@ -34,7 +34,7 @@
   var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
   var color = getRandomColor() ;
   var width = canvas.width ; var height = canvas.height ;
-  var map ; var map_width ; var map_height ; var c ;
+  var map ; var map_width ; var map_height ;
 
   var id = -1 ;
   var socket = io.connect('http://127.0.0.1:5000');
@@ -96,19 +96,15 @@
     B.drawBall() ;
     //map
 
-    for (var x = 0 ; x < map_width; x += 1){
-      for (var y = 0; y < map_height ; y += 1){
-        ctx.beginPath();
-        ctx.rect(x*c-personalX+width/2,y*c-personalY+height/2, c, c);
-        ctx.fillStyle = "#000000";
-        ctx.fill();
-        ctx.closePath();
-      }
-    }
-
-
-
-
+    // for (var x = 0 ; x < map_width; x += 1){
+    //   for (var y = 0; y < map_height ; y += 1){
+    //     ctx.beginPath();
+    //     ctx.rect(x*c-personalX+width/2,y*c-personalY+height/2, c, c);
+    //     ctx.fillStyle = "#000000";
+    //     ctx.fill();
+    //     ctx.closePath();
+    //   }
+    // }
   }
 
   function mouseMoveHandler(e) {
@@ -159,6 +155,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     quadrillage();
     socket.emit('request_frame',id);
+
     for (var id_key in client_players) {
       id_key = Number(id_key);
       var x = client_players[id_key]["x"];
