@@ -2,13 +2,10 @@
 
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
-import random
+import random 
 import numpy as np
 import time as time
 from math import *
-from generate_map import *
-compress = 10
-map, map_width, map_height = get_map("../maps/test_img2.png", compress)
 
 app = Flask(__name__)
 
@@ -17,7 +14,7 @@ width, height = 1000, 1000
 dt = 0.005
 socketio = SocketIO(app)
 
-Xstart , Ystart = 0, 0
+Xstart , Ystart = 200, 200
 speed = 0.005
 bullet_speed = 0.01
 players = {}
@@ -43,15 +40,10 @@ def index():
 
 @socketio.on('new_connection')
 def handle_new_connection():
-	print("new player connected")
-	id = random.randint(0,100)
-	print(id)
-	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0 }
-	team = 0
-	emit('authentification',
-	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height,"compress_rate" : compress,
-	 "color" : getRandomColor(), "r" : 10 } )
-
+	#print("new player connected")
+	id = int(time.time())
+	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "color" : getRandomColor(), "r" : 10}
+	emit('authentification',id)
 
 @socketio.on('client_speed_update')
 def handle_move(id,vx,vy):
@@ -64,7 +56,7 @@ def handle_shoot(id,vx,vy):
 	print('shoot !', id)
 	bullet_id = random.randint(100, 200)
 	bullets[bullet_id] = { "x" : players[id]["x"],
-						   "y" : players[id]["y"],
+						   "y" : players[id]["y"], 
 						   "vx" : vx ,
 						   "vy" : vy ,
 						   "color" : players[id]["color"]}
@@ -74,9 +66,9 @@ def handle_collision(id_bullets):
 	for id_players in players:
 		print(players[id_players]["r"])
 		if (players[id_players]["color"] != bullets[id_bullets]["color"] and (players[id_players]["x"]-bullets[id_bullets]["x"])**2 + (players[id_players]["y"]-bullets[id_bullets]["y"])**2 <= (players[id_players]["r"] + smallballRadius)**2):
-			players[id_players]["r"] += 5
+			players[id_players]["r"] += 5 
 			bullets.pop(id_bullets, None)
-
+	 
 
 def players_update(last_update):
 	server_clock = time.clock()
