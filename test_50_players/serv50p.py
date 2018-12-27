@@ -5,9 +5,6 @@ from flask_socketio import SocketIO, send, emit
 import random
 import time as time
 from math import *
-from generate_map import *
-compress = 10
-map, map_width, map_height = get_map("../maps/test_img2.png", compress)
 
 app = Flask(__name__)
 
@@ -17,7 +14,7 @@ dt = 0.005
 r = 5
 socketio = SocketIO(app)
 
-Xstart , Ystart = 0, 0
+Xstart , Ystart = 0,0
 speed = 0.005
 bullet_speed = 0.01
 players = {}
@@ -28,7 +25,7 @@ last_update = server_clock
 
 @app.route('/')
 def index():
-	return render_template('client_game2.html')
+	return render_template('client_game50p.html')
 
 @socketio.on('new_connection')
 def handle_new_connection():
@@ -36,10 +33,7 @@ def handle_new_connection():
 	id = random.randint(0,100)
 	print(id)
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0 }
-	team = 0
-	emit('authentification',
-	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height,"compress_rate" : compress } )
-
+	emit('authentification',id)
 
 @socketio.on('client_speed_update')
 def handle_move(id,vx,vy):

@@ -26,31 +26,28 @@
 
   var spacePressed=false;
   var once=true;
-  var quadwidth=1;
-  var quadspace=100;
+  var quadwidth=2;
+  var quadspace=50;
 
-  var personalX = 0 ; var vx ;
-  var personalY = 0 ; var vy ;
+  var personalX = 0 ; var vx = 0 ;
+  var personalY = 0 ; var vy = vmax ;
   var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
-  var color = getRandomColor() ;
+
   var width = canvas.width ; var height = canvas.height ;
-  var map ; var map_width ; var map_height ; var c ;
 
   var id = -1 ;
   var socket = io.connect('http://127.0.0.1:5000');
 
+var ite = 0 ; v = 20 ;
+var N = 100 ;
   client_players = {} ;
   client_bullets = {} ;
 
   socket.on('connect', function(){
     socket.emit('new_connection');
   });
-  socket.on('authentification',function(dict){
-    id = dict["id"] ;
-    map = dict["map"] ;
-    map_height = dict["map_height"];
-    map_width = dict["map_width"] ;
-
+  socket.on('authentification',function(ID){
+    id = ID ;
   });
   socket.on('update',function(game){
     client_players = game["players"] ;
@@ -60,21 +57,12 @@
     personalX = pos["x"] ; personalY = pos["y"] ;
   });
 
-  document.addEventListener("mousemove", mouseMoveHandler, false);
+  // document.addEventListener("mousemove", mouseMoveHandler, false);
   document.addEventListener("keydown", keyDownHandler, false);
   document.addEventListener("keyup", keyUpHandler, false);
 
-  function getRandomColor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
 
   function quadrillage(){
-    // quadrillage
   	for(var nx=Math.floor((personalX-width/2)/quadspace);
     nx<=Math.floor((personalX+width/2)/quadspace);nx+=1){
   		ctx.beginPath();
@@ -91,37 +79,19 @@
       ctx.fill();
       ctx.closePath();
     }
-    // centre
-    let B = new ball(-personalX + width/2,-personalY+height/2,smallballRadius+1);
-    B.drawBall() ;
-    //map
-
-    for (var x = 0 ; x < map_width; x += 1){
-      for (var y = 0; y < map_height ; y += 1){
-        ctx.beginPath();
-        ctx.rect(x*c-personalX+width/2,y*c-personalY+height/2, c, c);
-        ctx.fillStyle = "#000000";
-        ctx.fill();
-        ctx.closePath();
-      }
-    }
-
-
-
-
   }
 
-  function mouseMoveHandler(e) {
-    relativeX = e.clientX+window.pageXOffset;
-    relativeY = e.clientY+window.pageYOffset;
-    vx = relativeX - width/2 ;
-    vy = relativeY - height/2 ;
-    v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
-    if (v0 > vmax){
-      vx = vx*vmax/v0 ; vy = vy*vmax/v0 ;
-      }
-    socket.emit('client_speed_update', id, vx, vy ) ;
-  }
+  // function mouseMoveHandler(e) {
+  //   relativeX = e.clientX+window.pageXOffset;
+  //   relativeY = e.clientY+window.pageYOffset;
+  //   vx = relativeX - width/2 ;
+  //   vy = relativeY - height/2 ;
+  //   v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
+  //   if (v0 > vmax){
+  //     vx = vx*vmax/v0 ; vy = vy*vmax/v0 ;
+  //     }
+  //   socket.emit('client_speed_update', id, vx, vy ) ;
+  // }
 
   function keyDownHandler(e) {
     if(e.keyCode == 32 && once) {
@@ -147,7 +117,7 @@
     drawBall(){
       ctx.beginPath();
       ctx.arc(this.x,this.y,this.rayon, 0, Math.PI*2);
-      ctx.fillStyle = color;
+      ctx.fillStyle = "#0095DD";
       ctx.fill();
       ctx.closePath();
     }
@@ -158,6 +128,9 @@
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     quadrillage();
+    vx = Math.sin(ite/N)*v ; vy = Math.cos(ite/N)*v ;
+    ite += 1 ;
+    socket.emit('client_speed_update', id, vx, vy ) ;
     socket.emit('request_frame',id);
     for (var id_key in client_players) {
       id_key = Number(id_key);

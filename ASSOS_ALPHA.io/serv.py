@@ -5,9 +5,6 @@ from flask_socketio import SocketIO, send, emit
 import random
 import time as time
 from math import *
-from generate_map import *
-compress = 10
-map, map_width, map_height = get_map("../maps/test_img2.png", compress)
 
 app = Flask(__name__)
 
@@ -37,9 +34,7 @@ def handle_new_connection():
 	print(id)
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0 }
 	team = 0
-	emit('authentification',
-	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height,"compress_rate" : compress } )
-
+	emit('authentification',{"id" : id,"team" : team } )
 
 @socketio.on('client_speed_update')
 def handle_move(id,vx,vy):

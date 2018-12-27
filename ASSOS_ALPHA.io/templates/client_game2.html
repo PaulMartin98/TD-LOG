@@ -26,7 +26,7 @@
 
   var spacePressed=false;
   var once=true;
-  var quadwidth=1;
+  var quadwidth=2;
   var quadspace=100;
 
   var personalX = 0 ; var vx ;
@@ -34,7 +34,6 @@
   var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
   var color = getRandomColor() ;
   var width = canvas.width ; var height = canvas.height ;
-  var map ; var map_width ; var map_height ; var c ;
 
   var id = -1 ;
   var socket = io.connect('http://127.0.0.1:5000');
@@ -47,9 +46,6 @@
   });
   socket.on('authentification',function(dict){
     id = dict["id"] ;
-    map = dict["map"] ;
-    map_height = dict["map_height"];
-    map_width = dict["map_width"] ;
 
   });
   socket.on('update',function(game){
@@ -74,7 +70,7 @@
   }
 
   function quadrillage(){
-    // quadrillage
+
   	for(var nx=Math.floor((personalX-width/2)/quadspace);
     nx<=Math.floor((personalX+width/2)/quadspace);nx+=1){
   		ctx.beginPath();
@@ -91,24 +87,8 @@
       ctx.fill();
       ctx.closePath();
     }
-    // centre
     let B = new ball(-personalX + width/2,-personalY+height/2,smallballRadius+1);
     B.drawBall() ;
-    //map
-
-    for (var x = 0 ; x < map_width; x += 1){
-      for (var y = 0; y < map_height ; y += 1){
-        ctx.beginPath();
-        ctx.rect(x*c-personalX+width/2,y*c-personalY+height/2, c, c);
-        ctx.fillStyle = "#000000";
-        ctx.fill();
-        ctx.closePath();
-      }
-    }
-
-
-
-
   }
 
   function mouseMoveHandler(e) {
