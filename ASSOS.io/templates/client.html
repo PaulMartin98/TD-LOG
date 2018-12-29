@@ -63,6 +63,8 @@
 function compute_rendering() {
   map_rendered.width = map_width ;   map_rendered.height = map_height ;
   map_rendered_ctx = map_rendered.getContext("2d");
+
+  // contour de la map
   map_rendered_ctx.beginPath()
   map_rendered_ctx.fillStyle = "#ff0000";
   map_rendered_ctx.moveTo(0,0); map_rendered_ctx.lineTo(map_width,0);
@@ -70,6 +72,7 @@ function compute_rendering() {
   map_rendered_ctx.lineTo(0, map_height);
   map_rendered_ctx.stroke() ;
 
+ // quadrillage
   for (var nx = 0; nx < Math.floor(map_width/quadspace)+1; nx += 1){
     map_rendered_ctx.beginPath();
     map_rendered_ctx.rect(nx*quadspace,0, quadwidth, map_rendered.width);
@@ -84,6 +87,7 @@ function compute_rendering() {
     map_rendered_ctx.fill();
     map_rendered_ctx.closePath();
   }
+  // map
   for (var x = 0; x < map_height; x += 1){
     for (var y = 0; y < map_width; y += 1){
       if (map[x+map_height*y] == 1 ) {
@@ -95,9 +99,7 @@ function compute_rendering() {
       }
     }
   }
-  // map_rendered_ctx.fillStyle = "#ff0000";
-  // map_rendered_ctx.rect(0,100,map_width,map_height) ;
-  // map_rendered_ctx.fill();
+
 
 
 }

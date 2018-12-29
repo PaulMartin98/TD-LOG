@@ -27,7 +27,7 @@ bullet_speed = 15
 players = {}
 bullets = {}
 
-bigballRadius = 15;
+bigballRadius = 10;
 smallballRadius = 3;
 
 server_clock = time.clock()
@@ -53,10 +53,10 @@ def handle_new_connection():
 	print("new player connected")
 	id = int(time.clock()*10**5)
 	print(id)
-	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor() }
+	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : 10, "color" : getRandomColor() }
 	team = 0
 	emit('authentification',
-	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height, "color" : getRandomColor(), "r" : bigballRadius} )
+	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height, "color" : getRandomColor(), "r" : 10 } )
 
 
 @socketio.on('client_speed_update')
@@ -74,39 +74,31 @@ def handle_shoot(id,vx,vy):
 						   "y" : players[id]["y"],
 						   "vx" : vx ,
 						   "vy" : vy ,
-						   "color" : players[id]["color"],
-						   "player_id" : id}
+						   "color" : players[id]["color"]}
 
 def players_update():
 	global server_clock, last_update
 	server_clock = time.clock()
-	topopbul = []
-	topopplay = []
+	topop = []
 	for id in players:
 		new_x = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
 		new_y = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
 		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
 			players[id]["x"] = new_x
 			players[id]["y"] = new_y
-		if players[id]["r"]<6:
-			topopplay.append(id)
 
 	for id in bullets:
 		new_x = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
 		new_y = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
+
 		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
 			bullets[id]["x"] = new_x
 			bullets[id]["y"] = new_y
 		else :
-			topopbul.append(id)
-		for idp in players:
-			if (players[idp]["color"] != bullets[id]["color"] and (players[idp]["x"]-bullets[id]["x"])**2 + (players[idp]["y"]-bullets[id]["y"])**2 <= (players[idp]["r"] + smallballRadius)**2):
-				players[idp]["r"] -= 4
-				topopbul.append(id)
-	for id in topopbul:
+			topop.append(id)
+
+	for id in topop:
 		bullets.pop(id, None)
-	for id in topopplay:
-		players.pop(id,None)
 	last_update = server_clock
 
 @socketio.on('request_frame')
@@ -117,13 +109,13 @@ def handle_request_frame():
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
 		last_broadcast = time.clock()
 
-# @socketio.on('collision_test')
-# def handle_collision(id_bullets):
-# 	for id_players in players:
-# 		# print(players[id_players]["r"])
-# 		if (players[id_players]["color"] != bullets[id_bullets]["color"] and (players[id_players]["x"]-bullets[id_bullets]["x"])**2 + (players[id_players]["y"]-bullets[id_bullets]["y"])**2 <= (players[id_players]["r"] + smallballRadius)**2):
-# 			players[id_players]["r"] += 5
-# 			bullets.pop(id_bullets, None)
+@socketio.on('collision_test')
+def handle_collision(id_bullets):
+	for id_players in players:
+		# print(players[id_players]["r"])
+		if (players[id_players]["color"] != bullets[id_bullets]["color"] and (players[id_players]["x"]-bullets[id_bullets]["x"])**2 + (players[id_players]["y"]-bullets[id_bullets]["y"])**2 <= (players[id_players]["r"] + smallballRadius)**2):
+			players[id_players]["r"] += 5
+			bullets.pop(id_bullets, None)
 
 if __name__ == '__main__':
 
