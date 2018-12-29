@@ -133,11 +133,14 @@ function mouseMoveHandler(e){
   vx = relativeX - width/2 ;
   vy = relativeY - height/2 ;
   v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
+
   if (v0 > vmax)
   {
     vx = vx*vmax/v0 ;
     vy = vy*vmax/v0 ;
+    v0 = vmax ;
   }
+
   socket.emit('client_speed_update', id, vx, vy ) ;
 }
 
@@ -146,7 +149,7 @@ function keyDownHandler(e){
   {
     spacePressed = true;
     once = false;
-    socket.emit('client_shoot', id, vx*vmax/v0, vy*vmax/v0);
+    socket.emit('client_shoot', id,(vx*vmax)/v0, (vy*vmax)/v0);
   }
 }
 
