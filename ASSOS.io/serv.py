@@ -7,7 +7,6 @@ import numpy as np
 import time as time
 from math import *
 from generate_map import *
-import schedule
 from threading import Thread
 # from flask_apscheduler import APScheduler
 
@@ -15,11 +14,7 @@ from threading import Thread
 
 
 map, map_width, map_height = get_map("../maps/test_img2.png")
-
 app = Flask(__name__)
-# scheduler = APScheduler()
-# scheduler.init_app(app)
-# scheduler.start()
 
 app.config['SECRET-KEY'] = 'scret'
 width, height = 1000, 1000
@@ -27,8 +22,8 @@ dt = 0.005
 socketio = SocketIO(app)
 
 Xstart , Ystart = 0, 0
-speed = 0.005
-bullet_speed = 0.01
+speed = 5
+bullet_speed = 15
 players = {}
 bullets = {}
 
@@ -37,9 +32,8 @@ smallballRadius = 3;
 
 server_clock = time.clock()
 last_update = server_clock
-last_broadcast = server_clock
-refreshing_time = 1
-
+refreshing_time = 0.0015
+# frames = 0
 
 def getRandomColor():
   letters = '0123456789ABCDEF'
@@ -78,11 +72,27 @@ def handle_shoot(id,vx,vy):
 						   "vx" : vx ,
 						   "vy" : vy ,
 						   "color" : players[id]["color"]}
+def players_update():
+	global server_clock, last_update
+	server_clock = time.clock()
+
+	for id in players:
+		players[id]["x"] = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
+		players[id]["y"] = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
+	for id in bullets:
+		bullets[id]["x"] = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
+		bullets[id]["y"] = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
+
+	# global frames
+	# frames += 1
+	# if frames%24 == 0: print(server_clock-last_update)
+	last_update = server_clock
 
 @socketio.on('request_frame')
 def handle_request_frame():
-	if time.clock() - last_broadcast > refreshing_time :
-		players_update(last_update)
+	global last_update
+	if time.clock() - last_update > refreshing_time :
+		players_update()
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
 
 @socketio.on('collision_test')
@@ -93,21 +103,10 @@ def handle_collision(id_bullets):
 			players[id_players]["r"] += 5
 			bullets.pop(id_bullets, None)
 
-
-def players_update(last_update):
-	server_clock = time.clock()
-	for id in players:
-		players[id]["x"] = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
-		players[id]["y"] = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
-	for id in bullets:
-		bullets[id]["x"] = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
-		bullets[id]["y"] = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
-
-	last_update = server_clock
-
-
 if __name__ == '__main__':
 
 
 	app.debug = True
+	print("map size : ", map_width, map_height, " : ", map_width*map_height )
+
 	socketio.run(app, host='localhost', port=5000)
