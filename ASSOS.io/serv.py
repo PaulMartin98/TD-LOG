@@ -83,14 +83,15 @@ def players_update():
 	for id in players:
 		new_x = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
 		new_y = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
-		if (map[int(new_y) + map_height*int(new_x)] == 0) and 0 <= new_y < map_height and 0 <= new_x < map_width :
+		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
 			players[id]["x"] = new_x
 			players[id]["y"] = new_y
 
 	for id in bullets:
 		new_x = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
 		new_y = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
-		if (map[int(new_y) + map_height*int(new_x)] == 0) and 0 <= new_y < map_height and 0 <= new_x < map_width :
+
+		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
 			bullets[id]["x"] = new_x
 			bullets[id]["y"] = new_y
 		else :
