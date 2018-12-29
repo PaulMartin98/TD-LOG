@@ -33,6 +33,7 @@ smallballRadius = 3;
 server_clock = time.clock()
 last_update = server_clock
 refreshing_time = 0.0015
+last_broadcast = time.clock()
 # frames = 0
 
 def getRandomColor():
@@ -66,34 +67,46 @@ def handle_move(id,vx,vy):
 @socketio.on('client_shoot')
 def handle_shoot(id,vx,vy):
 	# print('shoot !', id)
+	global shoot
+	shoot = True
 	bullet_id = random.randint(100, 200)
 	bullets[bullet_id] = { "x" : players[id]["x"],
 						   "y" : players[id]["y"],
 						   "vx" : vx ,
 						   "vy" : vy ,
 						   "color" : players[id]["color"]}
+
 def players_update():
 	global server_clock, last_update
 	server_clock = time.clock()
-
+	topop = []
 	for id in players:
-		players[id]["x"] = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
-		players[id]["y"] = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
-	for id in bullets:
-		bullets[id]["x"] = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
-		bullets[id]["y"] = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
+		new_x = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
+		new_y = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
+		if (map[int(new_y) + map_height*int(new_x)] == 0) and 0 <= new_y < map_height and 0 <= new_x < map_width :
+			players[id]["x"] = new_x
+			players[id]["y"] = new_y
 
-	# global frames
-	# frames += 1
-	# if frames%24 == 0: print(server_clock-last_update)
+	for id in bullets:
+		new_x = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
+		new_y = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
+		if (map[int(new_y) + map_height*int(new_x)] == 0) and 0 <= new_y < map_height and 0 <= new_x < map_width :
+			bullets[id]["x"] = new_x
+			bullets[id]["y"] = new_y
+		else :
+			topop.append(id)
+
+	for id in topop:
+		bullets.pop(id, None)
 	last_update = server_clock
 
 @socketio.on('request_frame')
 def handle_request_frame():
-	global last_update
-	if time.clock() - last_update > refreshing_time :
+	global last_broadcast
+	if time.clock() - last_broadcast > refreshing_time :
 		players_update()
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
+		last_broadcast = time.clock()
 
 @socketio.on('collision_test')
 def handle_collision(id_bullets):
