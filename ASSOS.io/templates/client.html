@@ -6,7 +6,7 @@
   <style>* { padding: 0; margin: 0; }
   canvas { display: block; margin: 0 auto; }
   #map {z-index: 1; position:absolute; left:0px; top:0px;}
-  #players {z-index: 2; position:absolute; left:0px; top:0px;} </style>
+#players {z-index: 2; position:absolute; left:0px; top:0px;} </style>
 </head>
 
 <body>
@@ -18,113 +18,123 @@
 
   <script>
 
-  var map_canvas = document.getElementById("map");
-  map_canvas.height = window.innerHeight;
-  map_canvas.width = window.innerWidth;
-  var map_ctx = map_canvas.getContext("2d");
+    var map_canvas = document.getElementById("map");
+    map_canvas.height = window.innerHeight;
+    map_canvas.width = window.innerWidth;
+    var map_ctx = map_canvas.getContext("2d");
 
-  var map_rendered = document.createElement("canvas");
-  var map_rendered_ctx;
+    var map_rendered = document.createElement("canvas");
+    var map_rendered_ctx;
 
-  var players_canvas = document.getElementById("players");
-  var players_ctx = players_canvas.getContext("2d");
-  players_canvas.height = window.innerHeight;
-  players_canvas.width = window.innerWidth;
+    var players_canvas = document.getElementById("players");
+    var players_ctx = players_canvas.getContext("2d");
+    players_canvas.height = window.innerHeight;
+    players_canvas.width = window.innerWidth;
 
-  var bigballRadius = 10;
-  var vmax = 250;
-  var smallballRadius = 3;
-  var alive = true;
+    var created = false;
+    var bigballRadius = 10;
+    var vmax = 250;
+    var smallballRadius = 3;
+    var alive = true;
 
-  var spacePressed = false;
-  var once = true;
-  var quadwidth = 2;
-  var quadspace = 50;
+    var spacePressed = false;
+    var once = true;
+    var quadwidth = 2;
+    var quadspace = 50;
 
-  var personalX = 0 ;
-  var vx ;
-  var personalY = 0 ;
-  var vy ;
-  var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
 
-  var width = map_canvas.width ; var height = map_canvas.height ;
-  var map ; var map_width ; var map_height ;
+    var drawing = true;
+    var personalX = 0 ;
+    var vx ;
+    var personalY = 0 ;
+    var vy ;
+    var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
 
-  var id = -1 ;
-  var socket = io.connect('http://127.0.0.1:5000');
-  var connected = false ;
-  client_players = {} ;
-  client_bullets = {} ;
-  client_color = {} ;
+    var width = map_canvas.width ; 
+    var height = map_canvas.height ;
+    var map ; 
+    var map_width ; 
+    var map_height ;
 
-  socket.on('connect', function()
-  {    socket.emit('new_connection');
-});
+    var id = -1 ;
+    var socket = io.connect('http://127.0.0.1:5000');
 
-socket.on('dead',function(ID){
-  if (ID == id){
-    alive = false ;
-  }
-});
 
-function compute_rendering() {
-  map_rendered.width = map_width ;   map_rendered.height = map_height ;
-  map_rendered_ctx = map_rendered.getContext("2d");
+    client_players = {} ;
+    client_bullets = {} ;
+    client_color = {} ;
 
-  // contour de la map
-  map_rendered_ctx.beginPath()
-  map_rendered_ctx.fillStyle = "#ff0000";
-  map_rendered_ctx.moveTo(0,0); map_rendered_ctx.lineTo(map_width,0);
-  map_rendered_ctx.lineTo(map_width, map_height);
-  map_rendered_ctx.lineTo(0, map_height);
-  map_rendered_ctx.stroke() ;
+    socket.on('connect', function()
+      {    socket.emit('new_connection');
+    });
 
-  // quadrillage
-  for (var nx = 0; nx < Math.floor(map_width/quadspace)+1; nx += 1){
-    map_rendered_ctx.beginPath();
-    map_rendered_ctx.rect(nx*quadspace,0, quadwidth, map_rendered.width);
-    map_rendered_ctx.fillStyle = "#9E9E9E";
-    map_rendered_ctx.fill();
-    map_rendered_ctx.closePath();
-  }
-  for (var ny = 0; ny < Math.floor(map_width/quadspace);ny += 1){
-    map_rendered_ctx.beginPath();
-    map_rendered_ctx.rect(0,ny*quadspace, map_rendered.width, quadwidth);
-    map_rendered_ctx.fillStyle = "#9E9E9E";
-    map_rendered_ctx.fill();
-    map_rendered_ctx.closePath();
-  }
-  // map
-  for (var x = 0; x < map_height; x += 1){
-    for (var y = 0; y < map_width; y += 1){
-      if (map[x+map_height*y] == 1 ) {
+    socket.on('dead',function(ID){
+      if (ID == id){
+        alive = false ;
+      }
+    });
+
+    function compute_rendering() 
+    {
+      socket.emit('rendering');
+      map_rendered.width = map_width ;   
+      map_rendered.height = map_height ;
+      map_rendered_ctx = map_rendered.getContext("2d");
+
+      // contour de la map
+      map_rendered_ctx.beginPath()
+      map_rendered_ctx.fillStyle = "#ff0000";
+      map_rendered_ctx.moveTo(0,0); map_rendered_ctx.lineTo(map_width,0);
+      map_rendered_ctx.lineTo(map_width, map_height);
+      map_rendered_ctx.lineTo(0, map_height);
+      map_rendered_ctx.stroke() ;
+
+      // quadrillage
+      for (var nx = 0; nx < Math.floor(map_width/quadspace)+1; nx += 1){
         map_rendered_ctx.beginPath();
-        map_rendered_ctx.rect(y,x, 1, 1);
-        map_rendered_ctx.fillStyle = "#00000";
+        map_rendered_ctx.rect(nx*quadspace,0, quadwidth, map_rendered.width);
+        map_rendered_ctx.fillStyle = "#9E9E9E";
         map_rendered_ctx.fill();
         map_rendered_ctx.closePath();
       }
+      for (var ny = 0; ny < Math.floor(map_width/quadspace);ny += 1){
+        map_rendered_ctx.beginPath();
+        map_rendered_ctx.rect(0,ny*quadspace, map_rendered.width, quadwidth);
+        map_rendered_ctx.fillStyle = "#9E9E9E";
+        map_rendered_ctx.fill();
+        map_rendered_ctx.closePath();
+      }
+      // map
+      for (var x = 0; x < map_height; x += 1){
+        for (var y = 0; y < map_width; y += 1){
+          if (map[x][y] == true) {
+            map_rendered_ctx.beginPath();
+            map_rendered_ctx.rect(y,x, 1, 1);
+            map_rendered_ctx.fillStyle = "#00000";
+            map_rendered_ctx.fill();
+            map_rendered_ctx.closePath();
+          }
+        }
+      }
+      socket.emit('rendering');
     }
-  }
-
-
-
-}
 
 socket.on('authentification',function(dict)
 {
-  connected = true ;
   id = dict["id"] ;
   map = dict["map"] ;
   map_height = dict["map_height"];
   map_width = dict["map_width"] ;
   alive = true ;
-  compute_rendering ();
+  compute_rendering();
+  console.log(id);
 
 });
 
 socket.on('update',function(game)
 {
+  created = true;
+  drawing = true;
   client_players = game["players"] ;
   client_bullets = game["bullets"] ;
   personalX = client_players[id]["x"] ;
@@ -132,15 +142,18 @@ socket.on('update',function(game)
 });
 
 
+
 document.addEventListener("mousemove", mouseMoveHandler, false);
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 
-function mouseMoveHandler(e){
-  if (alive) {
-    relativeX = e.clientX+window.pageXOffset;
-    relativeY = e.clientY+window.pageYOffset;
+function mouseMoveHandler(e)
+{
+  if (alive && id != -1) 
+  { 
+    relativeX = e.clientX + window.pageXOffset;
+    relativeY = e.clientY + window.pageYOffset;
     vx = relativeX - width/2 ;
     vy = relativeY - height/2 ;
     v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
@@ -154,7 +167,6 @@ function mouseMoveHandler(e){
 
     socket.emit('client_speed_update', id, vx, vy ) ;
   }
-
 }
 
 function keyDownHandler(e){
@@ -170,7 +182,7 @@ function keyUpHandler(e){
   if(e.keyCode == 32)
   {
     spacePressed = false;
-    once=true;
+    once = true;
   }
 }
 
@@ -195,41 +207,85 @@ class ball
   }
 }
 
+function drawLife(rayon){
+  var h = 100;
+  var v = 100;
+  var r = 50;
+  var diff;
+  var arrondi;
+  var vie = (rayon/15)*100;
+  diff = (vie/100)*Math.PI*2;
+  players_ctx.beginPath();
+  players_ctx.arc(v,h,r,0,2*Math.PI,false);  // cercle blanc intérieur
+  players_ctx.fillStyle='#FFF';
+  players_ctx.fill();
+  players_ctx.closePath();
+
+  players_ctx.beginPath();  // arc vert
+  players_ctx.lineWidth = 15;
+  players_ctx.strokeStyle = "#b3cf3c";
+  players_ctx.arc(v,h,r,-Math.PI/2,-Math.PI/2+diff,false);
+  players_ctx.stroke();
+  players_ctx.closePath();
+
+  players_ctx.beginPath();  // arc rouge
+  players_ctx.strokeStyle = "#ea1f1f";
+  players_ctx.arc(v,h,r,diff-Math.PI/2,3*Math.PI/2,false);
+  players_ctx.stroke();
+  players_ctx.closePath();
+
+  players_ctx.fillStyle='#000';   // texte intérieur
+  players_ctx.textAlign='center';
+  players_ctx.font = '10pt Verdana'
+  arrondi = Math.round(100*vie)/100;
+  players_ctx.fillText(arrondi+'%',h+2,v+6);
+}
+
+
 function draw()
 {
 
-  map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
-  map_ctx.drawImage( map_rendered, width/2 - personalX, height/2 - personalY );
+  if (drawing)
+  {
+
+    map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
+    map_ctx.drawImage( map_rendered, width/2 - personalX, height/2 - personalY );
+  }
 
   socket.emit('request_frame');
 
-  players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
-
-  for (var id_players in client_players)
+  if (drawing)
   {
-    id_players = Number(id_players);
-    var x = client_players[id_players]["x"];
-    var y = client_players[id_players]["y"];
-    if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
+    players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
+
+    for (var id_players in client_players)
     {
-      let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
-      B.drawBall();
+      id_players = Number(id_players);
+      var x = client_players[id_players]["x"];
+      var y = client_players[id_players]["y"];
+      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
+      {
+        let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
+        B.drawBall();
+              if (id != -1 && created)
+      {
+          drawLife(client_players[id]["r"]);
+      }
+      }
+    }
+    for (var id_bullets in client_bullets)
+    {
+      id_bullets = Number(id_bullets);
+      var x = client_bullets[id_bullets]["x"];
+      var y = client_bullets[id_bullets]["y"];
+      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
+      {
+        let B = new ball(x - personalX + width/2, y - personalY + height/2, smallballRadius, client_bullets[id_bullets]["color"]);
+        B.drawBall();
+      }
     }
   }
-  for (var id_bullets in client_bullets)
-  {
-    id_bullets = Number(id_bullets);
-    var x = client_bullets[id_bullets]["x"];
-    var y = client_bullets[id_bullets]["y"];
-    if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
-    {
-      let B = new ball(x - personalX + width/2, y - personalY + height/2, smallballRadius, client_bullets[id_bullets]["color"]);
-      B.drawBall();
-    }
-    // socket.emit('collision_test', id_bullets);
-  }
-
-
+  drawing = false;
   requestAnimationFrame(draw);
 }
 
