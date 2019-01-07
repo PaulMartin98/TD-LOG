@@ -140,8 +140,9 @@ function mouseMoveHandler(e){
     vy = vy*vmax/v0 ;
     v0 = vmax ;
   }
-
-  socket.emit('client_speed_update', id, vx, vy ) ;
+  if (id>-1){
+    socket.emit('client_speed_update', id, vx, vy ) ;
+  }
 }
 
 function keyDownHandler(e){
