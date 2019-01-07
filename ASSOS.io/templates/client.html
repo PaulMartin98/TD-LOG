@@ -34,6 +34,7 @@
   var bigballRadius = 10;
   var vmax = 250;
   var smallballRadius = 3;
+  var alive = true;
 
   var spacePressed = false;
   var once = true;
@@ -60,9 +61,17 @@
   {    socket.emit('new_connection');
 });
 
+socket.on('dead',function(ID){
+  if (ID == id){
+    alive = false ;
+  }
+});
+
 function compute_rendering() {
   map_rendered.width = map_width ;   map_rendered.height = map_height ;
   map_rendered_ctx = map_rendered.getContext("2d");
+
+  // contour de la map
   map_rendered_ctx.beginPath()
   map_rendered_ctx.fillStyle = "#ff0000";
   map_rendered_ctx.moveTo(0,0); map_rendered_ctx.lineTo(map_width,0);
@@ -70,6 +79,7 @@ function compute_rendering() {
   map_rendered_ctx.lineTo(0, map_height);
   map_rendered_ctx.stroke() ;
 
+  // quadrillage
   for (var nx = 0; nx < Math.floor(map_width/quadspace)+1; nx += 1){
     map_rendered_ctx.beginPath();
     map_rendered_ctx.rect(nx*quadspace,0, quadwidth, map_rendered.width);
@@ -84,6 +94,7 @@ function compute_rendering() {
     map_rendered_ctx.fill();
     map_rendered_ctx.closePath();
   }
+  // map
   for (var x = 0; x < map_height; x += 1){
     for (var y = 0; y < map_width; y += 1){
       if (map[x+map_height*y] == 1 ) {
@@ -95,9 +106,7 @@ function compute_rendering() {
       }
     }
   }
-  // map_rendered_ctx.fillStyle = "#ff0000";
-  // map_rendered_ctx.rect(0,100,map_width,map_height) ;
-  // map_rendered_ctx.fill();
+
 
 
 }
@@ -109,6 +118,7 @@ socket.on('authentification',function(dict)
   map = dict["map"] ;
   map_height = dict["map_height"];
   map_width = dict["map_width"] ;
+  alive = true ;
   compute_rendering ();
 
 });
@@ -128,21 +138,23 @@ document.addEventListener("keyup", keyUpHandler, false);
 
 
 function mouseMoveHandler(e){
-  relativeX = e.clientX+window.pageXOffset;
-  relativeY = e.clientY+window.pageYOffset;
-  vx = relativeX - width/2 ;
-  vy = relativeY - height/2 ;
-  v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
+  if (alive) {
+    relativeX = e.clientX+window.pageXOffset;
+    relativeY = e.clientY+window.pageYOffset;
+    vx = relativeX - width/2 ;
+    vy = relativeY - height/2 ;
+    v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
 
-  if (v0 > vmax)
-  {
-    vx = vx*vmax/v0 ;
-    vy = vy*vmax/v0 ;
-    v0 = vmax ;
-  }
-  if (id>-1){
+    if (v0 > vmax)
+    {
+      vx = vx*vmax/v0 ;
+      vy = vy*vmax/v0 ;
+      v0 = vmax ;
+    }
+
     socket.emit('client_speed_update', id, vx, vy ) ;
   }
+
 }
 
 function keyDownHandler(e){
@@ -186,36 +198,36 @@ class ball
 function draw()
 {
 
-    map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
-    map_ctx.drawImage( map_rendered, width/2 - personalX, height/2 - personalY );
+  map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
+  map_ctx.drawImage( map_rendered, width/2 - personalX, height/2 - personalY );
 
-    socket.emit('request_frame');
+  socket.emit('request_frame');
 
-    players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
+  players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
 
-    for (var id_players in client_players)
+  for (var id_players in client_players)
+  {
+    id_players = Number(id_players);
+    var x = client_players[id_players]["x"];
+    var y = client_players[id_players]["y"];
+    if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
     {
-      id_players = Number(id_players);
-      var x = client_players[id_players]["x"];
-      var y = client_players[id_players]["y"];
-      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
-      {
-        let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
-        B.drawBall();
-      }
+      let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
+      B.drawBall();
     }
-    for (var id_bullets in client_bullets)
+  }
+  for (var id_bullets in client_bullets)
+  {
+    id_bullets = Number(id_bullets);
+    var x = client_bullets[id_bullets]["x"];
+    var y = client_bullets[id_bullets]["y"];
+    if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
     {
-      id_bullets = Number(id_bullets);
-      var x = client_bullets[id_bullets]["x"];
-      var y = client_bullets[id_bullets]["y"];
-      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
-      {
-        let B = new ball(x - personalX + width/2, y - personalY + height/2, smallballRadius, client_bullets[id_bullets]["color"]);
-        B.drawBall();
-      }
-      // socket.emit('collision_test', id_bullets);
+      let B = new ball(x - personalX + width/2, y - personalY + height/2, smallballRadius, client_bullets[id_bullets]["color"]);
+      B.drawBall();
     }
+    // socket.emit('collision_test', id_bullets);
+  }
 
 
   requestAnimationFrame(draw);

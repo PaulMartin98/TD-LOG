@@ -103,10 +103,15 @@ def players_update():
 			if (players[idp]["color"] != bullets[id]["color"] and (players[idp]["x"]-bullets[id]["x"])**2 + (players[idp]["y"]-bullets[id]["y"])**2 <= (players[idp]["r"] + smallballRadius)**2):
 				players[idp]["r"] -= 4
 				topopbul.append(id)
+
+
+
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
 		players.pop(id,None)
+        	socketio.emit('dead',id,broadcast = True )
+
 	last_update = server_clock
 
 @socketio.on('request_frame')
