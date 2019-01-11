@@ -16,6 +16,8 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 
+  <script src="{{ url_for('static', filename='Players_interface.js') }}" rel="stylesheet" type="text/javascript" /></script>
+
   <script>
 
     var map_canvas = document.getElementById("map");
@@ -50,10 +52,10 @@
     var vy ;
     var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
 
-    var width = map_canvas.width ; 
+    var width = map_canvas.width ;
     var height = map_canvas.height ;
-    var map ; 
-    var map_width ; 
+    var map ;
+    var map_width ;
     var map_height ;
 
     var id = -1 ;
@@ -74,10 +76,10 @@
       }
     });
 
-    function compute_rendering() 
+    function compute_rendering()
     {
       socket.emit('rendering');
-      map_rendered.width = map_width ;   
+      map_rendered.width = map_width ;
       map_rendered.height = map_height ;
       map_rendered_ctx = map_rendered.getContext("2d");
 
@@ -150,8 +152,8 @@ document.addEventListener("keyup", keyUpHandler, false);
 
 function mouseMoveHandler(e)
 {
-  if (alive && id != -1) 
-  { 
+  if (alive && id != -1)
+  {
     relativeX = e.clientX + window.pageXOffset;
     relativeY = e.clientY + window.pageYOffset;
     vx = relativeX - width/2 ;
@@ -206,41 +208,6 @@ class ball
     players_ctx.closePath();
   }
 }
-
-function drawLife(rayon){
-  var h = 100;
-  var v = 100;
-  var r = 50;
-  var diff;
-  var arrondi;
-  var vie = (rayon/15)*100;
-  diff = (vie/100)*Math.PI*2;
-  players_ctx.beginPath();
-  players_ctx.arc(v,h,r,0,2*Math.PI,false);  // cercle blanc intérieur
-  players_ctx.fillStyle='#FFF';
-  players_ctx.fill();
-  players_ctx.closePath();
-
-  players_ctx.beginPath();  // arc vert
-  players_ctx.lineWidth = 15;
-  players_ctx.strokeStyle = "#b3cf3c";
-  players_ctx.arc(v,h,r,-Math.PI/2,-Math.PI/2+diff,false);
-  players_ctx.stroke();
-  players_ctx.closePath();
-
-  players_ctx.beginPath();  // arc rouge
-  players_ctx.strokeStyle = "#ea1f1f";
-  players_ctx.arc(v,h,r,diff-Math.PI/2,3*Math.PI/2,false);
-  players_ctx.stroke();
-  players_ctx.closePath();
-
-  players_ctx.fillStyle='#000';   // texte intérieur
-  players_ctx.textAlign='center';
-  players_ctx.font = '10pt Verdana'
-  arrondi = Math.round(100*vie)/100;
-  players_ctx.fillText(arrondi+'%',h+2,v+6);
-}
-
 
 function draw()
 {

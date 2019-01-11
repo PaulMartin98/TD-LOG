@@ -43,13 +43,13 @@ def index():
 
 @socketio.on('new_connection')
 def handle_new_connection():
-	print("Un joueur connecté")
+	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor() }
 	emit('authentification',
 	{"id" : id, "map" : map, "map_width" : map_width, "map_height" : map_height} )
 	print("Fin transfert map")
-	
+
 
 
 @socketio.on('client_speed_update')
