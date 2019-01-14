@@ -136,4 +136,4 @@ if __name__ == '__main__':
 	app.debug = True
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
 
-	socketio.run(app, host='localhost', port=5000)
+	socketio.run(app, host='0.0.0.0', port=5000)
