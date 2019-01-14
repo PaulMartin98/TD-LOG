@@ -8,22 +8,17 @@ import time as time
 from math import *
 from generate_map import *
 from threading import Thread
-# from flask_apscheduler import APScheduler
-
-
-
 
 map, map_width, map_height = get_map("../maps/test_img2.png")
 app = Flask(__name__)
 
 app.config['SECRET-KEY'] = 'scret'
 width, height = 1000, 1000
-dt = 0.005
 socketio = SocketIO(app)
 
 Xstart , Ystart = 0, 0
-speed = 5
-bullet_speed = 15
+speed = 3
+bullet_speed = 8
 players = {}
 bullets = {}
 
@@ -32,9 +27,8 @@ smallballRadius = 3;
 
 server_clock = time.clock()
 last_update = server_clock
-refreshing_time = 0.0015
+refreshing_time = 1/120
 last_broadcast = time.clock()
-# frames = 0
 
 def getRandomColor():
   letters = '0123456789ABCDEF'
@@ -49,24 +43,23 @@ def index():
 
 @socketio.on('new_connection')
 def handle_new_connection():
-
-	print("new player connected")
+	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
-	print(id)
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor() }
-	team = 0
 	emit('authentification',
-	{"id" : id, "team" : team, "map" : map, "map_width" : map_width, "map_height" : map_height, "color" : getRandomColor(), "r" : bigballRadius} )
+	{"id" : id, "map" : map, "map_width" : map_width, "map_height" : map_height} )
+	print("Fin transfert map")
+
 
 
 @socketio.on('client_speed_update')
 def handle_move(id,vx,vy):
-	# print('update',id,vx,vy)
 	players[id]['vx'] = vx
 	players[id]['vy'] = vy
+
+
 @socketio.on('client_shoot')
 def handle_shoot(id,vx,vy):
-	# print('shoot !', id)
 	global shoot
 	shoot = True
 	bullet_id = random.randint(100, 200)
@@ -85,7 +78,7 @@ def players_update():
 	for id in players:
 		new_x = players[id]["x"]+players[id]["vx"]*(server_clock-last_update)*speed
 		new_y = players[id]["y"]+players[id]["vy"]*(server_clock-last_update)*speed
-		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
+		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y)][int(new_x)] == False) :
 			players[id]["x"] = new_x
 			players[id]["y"] = new_y
 		if players[id]["r"]<6:
@@ -94,7 +87,7 @@ def players_update():
 	for id in bullets:
 		new_x = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
 		new_y = bullets[id]["y"]+bullets[id]["vy"]*(server_clock-last_update)*bullet_speed
-		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y) + map_height*int(new_x)] == 0) :
+		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y)][int(new_x)] == False) :
 			bullets[id]["x"] = new_x
 			bullets[id]["y"] = new_y
 		else :
@@ -104,15 +97,18 @@ def players_update():
 				players[idp]["r"] -= 4
 				topopbul.append(id)
 
-
-
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
 		players.pop(id,None)
-        	socketio.emit('dead',id,broadcast = True )
-
+		socketio.emit('dead', id, broadcast = True )
 	last_update = server_clock
+
+
+@socketio.on('rendering')
+def handle_rendering():
+	print("le temps est ")
+
 
 @socketio.on('request_frame')
 def handle_request_frame():
@@ -122,18 +118,11 @@ def handle_request_frame():
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
 		last_broadcast = time.clock()
 
-# @socketio.on('collision_test')
-# def handle_collision(id_bullets):
-# 	for id_players in players:
-# 		# print(players[id_players]["r"])
-# 		if (players[id_players]["color"] != bullets[id_bullets]["color"] and (players[id_players]["x"]-bullets[id_bullets]["x"])**2 + (players[id_players]["y"]-bullets[id_bullets]["y"])**2 <= (players[id_players]["r"] + smallballRadius)**2):
-# 			players[id_players]["r"] += 5
-# 			bullets.pop(id_bullets, None)
+
+
 
 if __name__ == '__main__':
-
-
-	app.debug = True
+	#app.debug = True
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
 
-	socketio.run(app, host='0.0.0.0', port=5000)
+	socketio.run(app, host='localhost', port=5000)

@@ -87,8 +87,4 @@ def get_map (filename):
     #         print(img[i][j])
     # new_img = (img[:,:,0]+ img[:,:,1]+ img[:,:,2])/3 > 0.9
     new_img = img[:,:,3]>0.9
-    new_tab = [0]*(width*height)
-    for i in range(height):
-        for j in range(width):
-            new_tab[i+height*j] = int(new_img[i,j])
-    return new_tab, width, height
+    return new_img.tolist(), width, height
