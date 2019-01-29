@@ -141,6 +141,7 @@ socket.on('update',function(game)
   client_bullets = game["bullets"] ;
   personalX = client_players[id]["x"] ;
   personalY = client_players[id]["y"];
+  personalPseudo = client_players[id]["pseudo"];
 });
 
 
@@ -234,6 +235,7 @@ function draw()
       {
         let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
         B.drawBall();
+        drawPseudo(personalPseudo);
               if (id != -1 && created)
       {
           drawLife(client_players[id]["r"]);

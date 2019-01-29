@@ -1,7 +1,6 @@
-
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit
+
 import random
 import numpy as np
 import time as time
@@ -12,7 +11,7 @@ from threading import Thread
 map, map_width, map_height = get_map("../maps/test_img2.png")
 app = Flask(__name__)
 
-app.config['SECRET-KEY'] = 'scret'
+app.config['SECRET_KEY'] = 'scret'
 width, height = 1000, 1000
 socketio = SocketIO(app)
 
@@ -37,15 +36,35 @@ def getRandomColor():
     color += letters[int(np.floor(random.random()*16))]
   return color
 
-@app.route('/')
+@app.route('/game')
 def index():
 	return render_template('client.html')
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    #if 'pseudo' in session:
+    #    return redirect('/game')
+    # else:
+    #     if request.method == 'POST':
+    #         if(str(request.form['sess']) == 'on'):
+    #             session['pseudo'] = str(request.form['ps'])
+    #             session.permanent = True
+    #         else:
+    #             session['pseudo'] = str(request.form['ps'])
+    #         return redirect('/game')
+    #     return render_template('login.html')
+
+    if request.method == 'POST':
+        session['pseudo'] = str(request.form['ps'])
+        return redirect('/game')
+    else:
+        return render_template('login.html')
 
 @socketio.on('new_connection')
 def handle_new_connection():
 	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
-	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor() }
+	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo'] }
 	emit('authentification',
 	{"id" : id, "map" : map, "map_width" : map_width, "map_height" : map_height} )
 	print("Fin transfert map")
@@ -124,4 +143,4 @@ def handle_request_frame():
 if __name__ == '__main__':
 	#app.debug = True
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
-	socketio.run(app, host='localhost', port=5000)
+	socketio.run(app, host='127.0.0.1', port=5000)

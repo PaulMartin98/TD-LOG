@@ -1,0 +1,25 @@
+<head>
+    <meta charset="utf-8" />
+    <title>Acceuil</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_login.css') }}">
+</head>
+<body>
+
+  <h1>
+  Bienvenue sur ASSOS.io
+  </h1>
+
+  <form method="post" action="">
+    <p> formulaire d'inscription</p>
+    <label for="ps">Votre pseudo: </label>
+    <input type="text" maxlength ="15" placeholder="Ex: tdlog<3" name="ps" id="ps" required />
+    <br />
+    <br />
+    <label for="sess">Enregistrer votre session pour un mois: </label>
+    <input type="checkbox" name="sess" id="sess"/>
+    <br />
+    <input type="submit" value="Jouer" />
+  </form>
+
+</body>
+</html>
