@@ -72,3 +72,22 @@ function drawPseudo(pseudo){
   players_ctx.closePath();
 
 }
+
+function draw_other_pseudo(e){
+  if(e.keyCode == 78)
+  {
+    var x = players_canvas.width - 150;
+    var y = 150;
+    players_ctx.font = "25px Arial";
+    players_ctx.fillStyle = "#e60a0a";
+    for (var id_players in client_players){
+      if(id_players != id )
+      {
+        players_ctx.beginPath();
+        players_ctx.fillText(client_players[id_players]['pseudo'],x,y);
+        players_ctx.closePath();
+        y = y + 40;
+      }
+    }
+  }
+}

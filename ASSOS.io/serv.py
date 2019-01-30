@@ -89,6 +89,16 @@ def handle_shoot(id,vx,vy):
 						   "color" : players[id]["color"],
 						   "player_id" : id}
 
+def redirect_dead():
+    return redirect('/end_game')
+
+@app.route('/end_game', methods=['GET','POST'])
+def players_dead():
+    if request.method == 'POST':
+        return redirect('/game')
+    else:
+        return render_template('end_game.html')
+
 def players_update():
 	global server_clock, last_update
 	server_clock = time.clock()
@@ -119,8 +129,11 @@ def players_update():
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
+        print(topoplay)
 		players.pop(id,None)
 		socketio.emit('dead', id, broadcast = True )
+        print("mort mort mort")
+        redirect('/end_game')
 	last_update = server_clock
 
 
@@ -136,9 +149,6 @@ def handle_request_frame():
 		players_update()
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
 		last_broadcast = time.clock()
-
-
-
 
 if __name__ == '__main__':
 	#app.debug = True
