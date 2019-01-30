@@ -129,11 +129,11 @@ def players_update():
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
-        print(topoplay)
+		return redirect('/end_game')
 		players.pop(id,None)
 		socketio.emit('dead', id, broadcast = True )
-        print("mort mort mort")
-        redirect('/end_game')
+		print("mort mort mort")
+		#return redirect('/end_game')
 	last_update = server_clock
 
 
