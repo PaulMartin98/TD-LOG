@@ -33,12 +33,13 @@ function drawLife(rayon){
 }
 
 function drawMiniMap(){
-  var x = 50;
-  var y = 200;
+  var x = players_canvas.width-270;
+  var y = players_canvas.height-170;
   var img = new Image();
   img.src = "img_mini.png";
   var w = 248;
   var h = 159;
+
   players_ctx.beginPath();
   players_ctx.fillStyle = "#FFF";
   players_ctx.fillRect(x,y,w,h);
@@ -50,6 +51,15 @@ function drawMiniMap(){
   players_ctx.rect(x,y,w,h);
   players_ctx.stroke();
   players_ctx.closePath();
+
+  var img = document.getElementById("source");
+  players_ctx.drawImage(img,x,y);
+
+  // var img = new Image();
+  // img.src = "{{ url_for('static', filename='img_mini.png') }}";
+  // players_ctx.beginPath();
+  // players_ctx.drawImage(img,x,y);
+  // players_ctx.closePath();
 
   //var img = document.getElementById("{{ url_for('static', filename='img_mini.png') }}");
   //players_ctx.drawImage(img,x,y)

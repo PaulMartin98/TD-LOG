@@ -11,6 +11,10 @@
 
 <body>
 
+  <div style="display:none;">
+    <img id="source" src = "{{ url_for('static', filename='img_mini.png') }}" >
+  </div>
+
   <canvas id="map" ></canvas>
   <canvas id="players"></canvas>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
@@ -73,8 +77,10 @@
     socket.on('dead',function(ID){
       if (ID == id){
         alive = false ;
+        socket.emit('logout');
       }
     });
+
 
     function compute_rendering()
     {
@@ -173,7 +179,7 @@ function mouseMoveHandler(e)
 }
 
 function keyDownHandler(e){
-  if(e.keyCode == 32 && once)
+  if(e.keyCode == 32 && once && alive)
   {
     spacePressed = true;
     once = false;
@@ -182,7 +188,7 @@ function keyDownHandler(e){
 }
 
 function keyUpHandler(e){
-  if(e.keyCode == 32)
+  if(e.keyCode == 32 && alive)
   {
     spacePressed = false;
     once = true;
@@ -236,6 +242,7 @@ function draw()
         let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
         B.drawBall();
         drawPseudo(personalPseudo);
+        drawMiniMap();
               if (id != -1 && created)
       {
           drawLife(client_players[id]["r"]);

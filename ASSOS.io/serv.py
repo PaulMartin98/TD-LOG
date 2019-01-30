@@ -38,7 +38,7 @@ def getRandomColor():
 
 @app.route('/game')
 def index():
-	return render_template('client.html')
+    return render_template('client.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -64,7 +64,7 @@ def login():
 def handle_new_connection():
 	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
-	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo'] }
+	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo']}
 	emit('authentification',
 	{"id" : id, "map" : map, "map_width" : map_width, "map_height" : map_height} )
 	print("Fin transfert map")
@@ -89,7 +89,8 @@ def handle_shoot(id,vx,vy):
 						   "color" : players[id]["color"],
 						   "player_id" : id}
 
-def redirect_dead():
+@socketio.on('logout')
+def handle_logout():
     return redirect('/end_game')
 
 @app.route('/end_game', methods=['GET','POST'])
@@ -129,10 +130,9 @@ def players_update():
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
-		return redirect('/end_game')
 		players.pop(id,None)
 		socketio.emit('dead', id, broadcast = True )
-		print("mort mort mort")
+        print("mort mort mort")
 		#return redirect('/end_game')
 	last_update = server_clock
 
@@ -151,6 +151,6 @@ def handle_request_frame():
 		last_broadcast = time.clock()
 
 if __name__ == '__main__':
-	#app.debug = True
+	app.debug = False
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
 	socketio.run(app, host='127.0.0.1', port=5000)
