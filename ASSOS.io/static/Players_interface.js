@@ -32,6 +32,17 @@ function drawLife(rayon){
   players_ctx.fillText(arrondi+'%',h+2,v+6);
 }
 
+
+function drawPixel(x,y,w,h){
+  var x_p = w + x*159/1327;
+  var y_p = h + y*159/1327;
+  players_ctx.beginPath();
+  players_ctx.fillStyle = "#FF0000"
+  players_ctx.arc(x_p,y_p,3,0,2*Math.PI);
+  players_ctx.fill();
+  players_ctx.closePath();
+}
+
 function drawMiniMap(){
   var x = players_canvas.width-270;
   var y = players_canvas.height-170;
@@ -55,21 +66,19 @@ function drawMiniMap(){
   var img = document.getElementById("source");
   players_ctx.drawImage(img,x,y);
 
-  // var img = new Image();
-  // img.src = "{{ url_for('static', filename='img_mini.png') }}";
-  // players_ctx.beginPath();
-  // players_ctx.drawImage(img,x,y);
-  // players_ctx.closePath();
+  var x_p = x + personalX*159/1327;
+  var y_p = y + personalY*159/1327;
+  players_ctx.beginPath();
+  players_ctx.fillStyle = "#01DF01";
+  players_ctx.arc(x_p,y_p,3,0,2*Math.PI,false);
+  players_ctx.fill();
+  players_ctx.closePath();
 
-  //var img = document.getElementById("{{ url_for('static', filename='img_mini.png') }}");
-  //players_ctx.drawImage(img,x,y)
-  //players_ctx.beginPath();
-  //im.onload = function(){
-  //var img = new Image();   // Crée un nouvel élément Image
-  //img.src = "/static/img_mini.png"; // Définit le chemin vers sa source
-  //players_ctx.drawImage(img,x,y);
-  //}
-  //players_ctx.closePath();
+  for (var id_players in client_players){
+    if (id_players != id){
+      drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y);
+    }
+  }
 }
 
 function drawPseudo(pseudo){
