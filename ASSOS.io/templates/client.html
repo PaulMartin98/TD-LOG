@@ -13,6 +13,7 @@
 
   <div style="display:none;">
     <img id="source" src = "{{ url_for('static', filename='img_mini.png') }}" >
+    <img id="background" src = "{{ url_for('static', filename='test_img2.png') }}" >
   </div>
 
   <canvas id="map" ></canvas>
@@ -113,17 +114,22 @@
         map_rendered_ctx.closePath();
       }
       // map
-      for (var x = 0; x < map_height; x += 1){
-        for (var y = 0; y < map_width; y += 1){
-          if (map[x][y] == true) {
-            map_rendered_ctx.beginPath();
-            map_rendered_ctx.rect(y,x, 1, 1);
-            map_rendered_ctx.fillStyle = "#00000";
-            map_rendered_ctx.fill();
-            map_rendered_ctx.closePath();
-          }
-        }
-      }
+      // for (var x = 0; x < map_height; x += 1){
+      //   for (var y = 0; y < map_width; y += 1){
+      //     if (map[x][y] == true) {
+      //       map_rendered_ctx.beginPath();
+      //       map_rendered_ctx.rect(y,x, 1, 1);
+      //       map_rendered_ctx.fillStyle = "#00000";
+      //       map_rendered_ctx.fill();
+      //       map_rendered_ctx.closePath();
+      //     }
+      //   }
+      //}
+
+      var back = document.getElementById('background');
+      map_rendered_ctx.drawImage(back,0,0);
+
+
       socket.emit('rendering');
     }
 
