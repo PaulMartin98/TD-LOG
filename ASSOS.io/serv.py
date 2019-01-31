@@ -65,8 +65,7 @@ def handle_new_connection():
 	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo']}
-	emit('authentification',
-	{"id" : id, "map" : map, "map_width" : map_width, "map_height" : map_height} )
+	emit('authentification', id )
 	print("Fin transfert map")
 
 

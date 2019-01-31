@@ -81,11 +81,10 @@ function drawMiniMap(){
   }
 }
 
-function drawPseudo(pseudo){
-  var x = players_canvas.width - 150;
-  var y = 100;
+function drawPseudo(pseudo,x,y)
+{
   players_ctx.beginPath();
-  players_ctx.font = "40px Arial";
+  players_ctx.font = "20px Arial";
   players_ctx.fillStyle = "#da6210";
   players_ctx.fillText(pseudo,x,y);
   players_ctx.closePath();
