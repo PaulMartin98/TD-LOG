@@ -245,7 +245,7 @@ function draw()
       {
         let B = new ball(x - personalX + width/2, y - personalY + height/2, client_players[id_players]["r"], client_players[id_players]["color"]);
         B.drawBall();
-        drawPseudo(personalPseudo);
+        drawPseudo(client_players[id_players]["pseudo"], x - personalX + width/2, y - personalY + height/2-20);
         drawMiniMap();
               if (id != -1 && created)
       {
