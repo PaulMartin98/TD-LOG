@@ -6,7 +6,7 @@
   <style>* { padding: 0; margin: 0; }
   canvas { display: block; margin: 0 auto; }
   #map {z-index: 1; position:absolute; left:0px; top:0px;}
-#players {z-index: 2; position:absolute; left:0px; top:0px;} </style>
+  #players {z-index: 2; position:absolute; left:0px; top:0px;} </style>
 </head>
 
 <body>
@@ -14,7 +14,11 @@
   <div style="display:none;">
     <img id="source" src = "{{ url_for('static', filename='img_mini.png') }}" >
     <img id="background" src = "{{ url_for('static', filename='test_img2.png') }}" >
+<<<<<<< HEAD
     <img id="grid" src = "{{ url_for('static', filename='grid.png') }}">
+=======
+
+>>>>>>> 9588d62742276562d02e90ed634b49b91f1179d4
   </div>
 
   <canvas id="map" ></canvas>
