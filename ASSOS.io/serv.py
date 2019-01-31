@@ -64,7 +64,7 @@ def login():
 def handle_new_connection():
 	print("Un joueur connecte")
 	id = int(time.clock()*10**5)
-	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo']}
+	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo'], "score" : 0}
 	emit('authentification', id )
 	print("Fin transfert map")
 
@@ -110,8 +110,8 @@ def players_update():
 		if  (0 < new_y < map_height) and (0 < new_x < map_width) and (map[int(new_y)][int(new_x)] == False) :
 			players[id]["x"] = new_x
 			players[id]["y"] = new_y
-		if players[id]["r"]<6:
-			topopplay.append(id)
+		#if players[id]["r"]<6:
+		#	topopplay.append(id)
 
 	for id in bullets:
 		new_x = bullets[id]["x"]+bullets[id]["vx"]*(server_clock-last_update)*bullet_speed
@@ -125,6 +125,9 @@ def players_update():
 			if (players[idp]["color"] != bullets[id]["color"] and (players[idp]["x"]-bullets[id]["x"])**2 + (players[idp]["y"]-bullets[id]["y"])**2 <= (players[idp]["r"] + smallballRadius)**2):
 				players[idp]["r"] -= 4
 				topopbul.append(id)
+                if players[idp]["r"]<6:
+                    topopplay.append(idp)
+                    players[bullets[id]["player_id"]]["score"] +=1
 
 	for id in topopbul:
 		bullets.pop(id, None)

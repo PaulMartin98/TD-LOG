@@ -91,21 +91,44 @@ function drawPseudo(pseudo,x,y)
 
 }
 
-function draw_other_pseudo(e){
-  if(e.keyCode == 78)
+function drawScore()
+{
+  var x = 50;
+  var y = players_canvas.height-100;
+  var id_best_score = [id,id,id];
+
+  for (var idp in client_players)
   {
-    var x = players_canvas.width - 150;
-    var y = 150;
-    players_ctx.font = "25px Arial";
-    players_ctx.fillStyle = "#e60a0a";
-    for (var id_players in client_players){
-      if(id_players != id )
-      {
-        players_ctx.beginPath();
-        players_ctx.fillText(client_players[id_players]['pseudo'],x,y);
-        players_ctx.closePath();
-        y = y + 40;
-      }
+    if(client_players[idp]["score"]>client_players[id_best_score[0]]["score"]){
+      id_best_score[2] = id_best_score[1];
+      id_best_score[1] = id_best_score[0];
+      id_best_score[0] = idp;
     }
+    else if(client_players[idp]["score"]>client_players[id_best_score[1]]["score"]){
+      id_best_score[2] = id_best_score[1];
+      id_best_score[1] = idp;
+    }
+    else if(client_players[idp]["score"]>client_players[id_best_score[2]]["score"]){
+      id_best_score[2] = idp;
+    }
+  }
+
+  players_ctx.beginPath();
+  players_ctx.font = "30px Arial";
+  players_ctx.fillStyle = "#0040FF";
+  players_ctx.fillText("Best Players:",x+50,y-40);
+  players_ctx.closePath();
+
+  for (var idp in id_best_score)
+  {
+    var sc = client_players[id_best_score[idp]]["score"];
+    //console.log(sc.toString());
+    var s = client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
+    players_ctx.beginPath();
+    players_ctx.font = "20px Arial";
+    players_ctx.fillStyle = "#da6210";
+    players_ctx.fillText(s,x,y);
+    players_ctx.closePath();
+    y = y + 30;
   }
 }
