@@ -44,35 +44,35 @@ def index():
 # definign the login page by the file login.html
 @app.route('/login', methods=['GET','POST'])
 def login():
-    # # session is a cookie saving the pseudo of the player
-    # # if pseudo is known, the player is redirected to the game
-    # if 'pseudo' in session:
-    #    return redirect('/game')
-    #
-    # # the pseudo is not known
-    # else:
-    #     # the formulary of login page has been sent
-    #     if request.method == 'POST':
-    #         # the player want to save his session for a month
-    #         if(str(request.form['sess']) == 'on'):
-    #             session['pseudo'] = str(request.form['ps'])
-    #             session.permanent = True
-    #         # the player doesn't want to save his session
-    #         else:
-    #             print("test")
-    #             session['pseudo'] = str(request.form['ps'])
-    #         #redirecting the player to the game
-    #         return redirect('/game')
-    #
-    #     # the formulary has not been sent, we return the login page
-    #     else:
-    #         return render_template('login.html')
+    # session is a cookie saving the pseudo of the player
+    # if pseudo is known, the player is redirected to the game
+    if 'pseudo' in session:
+       return redirect('/game')
 
-    if request.method == 'POST':
-        session['pseudo'] = str(request.form['ps'])
-        return redirect('/game')
+    # the pseudo is not known
     else:
-        return render_template('login.html')
+        # the formulary of login page has been sent
+        if request.method == 'POST':
+            # the player want to save his session for a month
+            if(str(request.form['result']) == 'Oui'):
+                session['pseudo'] = str(request.form['ps'])
+                session.permanent = True
+            # the player doesn't want to save his session
+            else:
+                print("test")
+                session['pseudo'] = str(request.form['ps'])
+            #redirecting the player to the game
+            return redirect('/game')
+
+        # the formulary has not been sent, we return the login page
+        else:
+            return render_template('login.html')
+
+    # if request.method == 'POST':
+    #     session['pseudo'] = str(request.form['ps'])
+    #     return redirect('/game')
+    # else:
+    #     return render_template('login.html')
 
 @socketio.on('new_connection')
 def handle_new_connection():
