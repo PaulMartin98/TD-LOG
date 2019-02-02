@@ -6,7 +6,6 @@ import numpy as np
 import time as time
 from math import *
 from generate_map import *
-from threading import Thread
 
 map, map_width, map_height = get_map("../maps/test_img2.png")
 app = Flask(__name__)
@@ -29,6 +28,7 @@ last_update = server_clock
 refreshing_time = 1/120
 last_broadcast = time.clock()
 
+# returning a random color
 def getRandomColor():
   letters = '0123456789ABCDEF'
   color = '#'
@@ -36,23 +36,37 @@ def getRandomColor():
     color += letters[int(np.floor(random.random()*16))]
   return color
 
+# defining the /game page by the file client.html
 @app.route('/game')
 def index():
     return render_template('client.html')
 
+# definign the login page by the file login.html
 @app.route('/login', methods=['GET','POST'])
 def login():
-    #if 'pseudo' in session:
+    # # session is a cookie saving the pseudo of the player
+    # # if pseudo is known, the player is redirected to the game
+    # if 'pseudo' in session:
     #    return redirect('/game')
+    #
+    # # the pseudo is not known
     # else:
+    #     # the formulary of login page has been sent
     #     if request.method == 'POST':
+    #         # the player want to save his session for a month
     #         if(str(request.form['sess']) == 'on'):
     #             session['pseudo'] = str(request.form['ps'])
     #             session.permanent = True
+    #         # the player doesn't want to save his session
     #         else:
+    #             print("test")
     #             session['pseudo'] = str(request.form['ps'])
+    #         #redirecting the player to the game
     #         return redirect('/game')
-    #     return render_template('login.html')
+    #
+    #     # the formulary has not been sent, we return the login page
+    #     else:
+    #         return render_template('login.html')
 
     if request.method == 'POST':
         session['pseudo'] = str(request.form['ps'])
@@ -92,10 +106,13 @@ def handle_shoot(id,vx,vy):
 def handle_logout():
     return redirect('/end_game')
 
+# defining the /end_game page
 @app.route('/end_game', methods=['GET','POST'])
 def players_dead():
+    # if the player click on the button then he his redirected to the game
     if request.method == 'POST':
         return redirect('/game')
+    # the player has not clicked
     else:
         return render_template('end_game.html')
 
@@ -151,6 +168,7 @@ def handle_request_frame():
 		socketio.emit('update', {"players" : players, "bullets" : bullets}, broadcast= True)
 		last_broadcast = time.clock()
 
+# defining the application
 if __name__ == '__main__':
 	app.debug = False
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
