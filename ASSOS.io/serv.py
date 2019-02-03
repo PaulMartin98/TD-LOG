@@ -10,6 +10,8 @@ from generate_map import *
 map, map_width, map_height = get_map("../maps/test_img2.png")
 app = Flask(__name__)
 
+
+
 app.config['SECRET_KEY'] = 'scret'
 width, height = 1000, 1000
 socketio = SocketIO(app)
@@ -81,6 +83,8 @@ def handle_new_connection():
 	players[id] = {"x" :Xstart, "y" : Ystart, "vx" : 0,"vy" : 0, "r" : bigballRadius, "color" : getRandomColor(), "pseudo" : session['pseudo'], "score" : 0}
 	emit('authentification', id )
 	print("Fin transfert map")
+    	file_p.write(format(time.clock(), '.10f')+",")
+    	file_p.write(str(len(players))+"\n")
 
 
 
@@ -154,6 +158,10 @@ def players_update():
 		#return redirect('/end_game')
 	last_update = server_clock
 
+    	file.write(format(server_clock, '.10f')+",")
+        file.write(format(time.clock() - server_clock, '.10f')+"\n")
+        file.flush()
+
 
 @socketio.on('rendering')
 def handle_rendering():
@@ -170,6 +178,15 @@ def handle_request_frame():
 
 # defining the application
 if __name__ == '__main__':
-	app.debug = False
+
+	file = open('activity_log.txt','w')
+    	file.seek(0)
+    	file.truncate()
+
+    	file_p = open('players_connected.txt','w')
+    	file_p.seek(0)
+    	file_p.truncate()
+
+	app.debug = True
 	print("map size : ", map_width, map_height, " : ", map_width*map_height )
 	socketio.run(app, host='127.0.0.1', port=5000)
