@@ -12,8 +12,8 @@
 <body>
 
   <div style="display:none;">
-    <img id="source" src = "{{ url_for('static', filename='img_mini.png') }}" >
-    <img id="background" src = "{{ url_for('static', filename='test_img2.png') }}" >
+    <img id="source" src = "{{ url_for('static', filename='img_mini3.png') }}" >
+    <img id="background" src = "{{ url_for('static', filename='test_img3.png') }}" >
     <img id="grid" src = "{{ url_for('static', filename='grid.png') }}">
 
   </div>
@@ -62,8 +62,8 @@
     var width = map_canvas.width ;
     var height = map_canvas.height ;
     var map ;
-    var map_width  = 2069;
-    var map_height  = 1327;
+    var map_width  = 486;
+    var map_height  = 453;
 
     var id = -1 ;
     var socket = io.connect('http://127.0.0.1:5000');
@@ -135,10 +135,13 @@
       socket.emit('rendering');
     }
 
-socket.on('authentification',function(id_)
+socket.on('authentification',function(dict)
 {
-  id =  id_;
+  id =  dict["id"];
   alive = true ;
+  map_width = dict["map_width"] ; map_height = dict["map_height"] ;
+  console.log(map_width);
+  console.log(map_height);
   compute_rendering();
   console.log(id);
 

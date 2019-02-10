@@ -1,84 +1,188 @@
-
 import matplotlib.image as mpimg
 import numpy as np
+import matplotlib.pyplot as plt
 import pprint as pp
 
-# def get_connex (map):
-#     height , width = map.shape[0], map.shape[1]
-#
-#     UF = (-1)*np.ones((height,width))
-#
-#     ite = 0
-#     U = np.zeros((height*width))
-#     E = []
-#
-#     def find_pxl():
-#         i,j = 0,0
-#         to_find , current = False, (0,0)
-#         while i < width and (not(to_find)):
-#             while j < height and (not(to_find)):
-#                 if U[i,j] == 0 and map[i,j] == 1:
-#                     to_find , current = True, (i,j)
-#         return current, to_find
-#
-#     def in_limits(pos):
-#         return 0<= pos[0] < height and 0<= pos[1] < width
-#
-#     def add_neighboors(current):
-#         i,j = current[0], current[1]
-#         N = [(i+1,j),(i-1,j),(i,j+1),(i,j-1)]
-#         for k in range(4):
-#             if in_limits(N[k]):
-#                 E.append(N[k])
-#
-#
-#
-#     current, tofind = find_pxl()
-#     UF[current[0],current[1]] = ite
-#     U[current[0],current[1]] = 1
-#
-#     while(tofind):
-#         add_neighboors ( current )
-#         while E != []:
-#             current = E[0]
-#             UF[current[0],current[1]] = ite
-#             add_neighboors ( current )
-#             U[current[0],current[1]] = 1
-#         ite += 1
-#         current, tofind = find_pxl()
-#     return UF, ite
-#
-# def get_contour(UF,ite):
-#     height , width = UF.shape[0], UF.shape[1]
-#
-#     contour = [[]]*ite
-#     U = np.zeros((height,width))
-#
-#     def find_contour(k):
-#         i,j = 0,0
-#         to_find , pxl = False, (0,0)
-#
-#         def non_pxl_neighboors(i,j):
-#             is_border, pxl = False, []
-#             N = [(i+1,j),(i-1,j),(i,j+1),(i,j-1)]
-#             for x in N:
-#                 if UF[x[0],x[1]]==-1:
-#                     is_border, pxl = True, x
-#                     break
-#             return is_border, pxl
-#
-#         while i < width and (not(to_find)):
-#             while j < height and (not(to_find)):
-#                 if UF[i,j] == k:
-#                     is_border, pxl = non_pxl_neighboor (i,j)
-#                     to_find , current = True, (i,j)
-#         return current, to_find
-#
-#     for k in range(ite):
-#         current = find_contour(k,UF)
 
-def get_map (filename):
+def get_contour(map):
+    height, width = map.shape[0], map.shape[1]
+    c_map = np.zeros((height, width))
+
+    for i in range(1, height - 1):
+        for j in range(1, width - 1):
+            if not (map[i, j]) and (np.abs(map[i, j] ^ map[i + 1, j]) +
+                                    np.abs(map[i, j] ^ map[i - 1, j]) +
+                                    np.abs(map[i, j] ^ map[i, j + 1]) +
+                                    np.abs(map[i, j] ^ map[i, j - 1])) >= 1:
+                c_map[i, j] = 1
+
+    def search_one():
+        b = True
+        i, j = 0, 0
+        while i < height - 1 and b:
+            i += 1
+            j = 0
+            while j < width - 1 and b:
+                b = (c_map[i, j] == 0)
+                j += 1
+        if (i, j) == (height - 1, width - 1):
+            return False, i, j
+        else:
+            return True, i, j
+
+    def search_next(i, j):
+        if c_map[i + 1, j] >= 1:
+            return True, i + 1, j
+        elif c_map[i - 1, j] >= 1:
+            return True, i - 1, j
+        elif c_map[i, j + 1] >= 1:
+            return True, i, j + 1
+        elif c_map[i, j - 1] >= 1:
+            return True, i, j - 1
+
+        if c_map[i + 1, j + 1] >= 1:
+            return True, i + 1, j + 1
+        if c_map[i + 1, j - 1] >= 1:
+            return True, i + 1, j - 1
+        if c_map[i - 1, j + 1] >= 1:
+            return True, i - 1, j + 1
+        if c_map[i - 1, j - 1] >= 1:
+            return True, i - 1, j - 1
+
+        else:
+            return False, -1, -1
+
+    b, i, j = search_one()
+    contours = []
+
+    while b:
+        contours.append([(i, j)])
+        sb = True
+        while sb:
+
+            c_map[i, j] = 0
+
+            sb, i, j = search_next(i, j)
+            if sb:
+                contours[-1].append((i, j))
+        b, i, j = search_one()
+    contours = [x for x in contours if len(x) > 2]
+    return contours
+
+
+def get(l, k):
+    n = len(l)
+    return l[k % n]
+
+
+def compute_tangeante(map, contours, bw=5):
+    height, width = map.shape[0], map.shape[1]
+    tanj_map = np.zeros((height, width))
+    for c in contours:
+        for k in range(len(c)):
+            if (get(c, k - bw)[0] - get(c, k + bw)[0]) == 0:
+                tanj_map[c[k][0], c[k][1]] = height * width
+            else:
+                tanj_map[c[k][0], c[k][1]] = (get(c, k - bw)[1] - get(c, k + bw)[1]) / (
+                        get(c, k - bw)[0] - get(c, k + bw)[0])
+    return tanj_map
+
+def dist(x,y,x_,y_):
+    return (x-x_)**2+(y-y_)**2
+def compute_nearest_border(map, contours, b=3):
+    height, width = map.shape[0], map.shape[1]
+    near_contour_map = np.zeros((height, width, 2))
+    near_contour_map = near_contour_map.astype(int)
+    dist_to_c = np.zeros((height, width))+height*width
+    for i in range(len(contours)):
+        for k in range(len(contours[i])):
+            x,y = contours[i][k][0], contours[i][k][1]
+            for j in range(-b+1,b):
+                for m in range(-b+1,b):
+                    d = dist(x,y,x+j,y+m)
+                    if d <= dist_to_c[x+j,y+m]:
+                        near_contour_map[x+j,y+m] = np.array([i, k])
+                        dist_to_c[x+j,y+m] = d
+
+    return near_contour_map
+
+
+
+def get_map(filename):
     img = mpimg.imread(filename)
-    height , width = img.shape[0],img.shape[1]
-    new_img = img[:,:,3]>0.9
+    height, width = img.shape[0], img.shape[1]
+    new_img = img[:, :, 3] > 0.9
     return new_img.tolist(), width, height
+
+
+def file_to_map(filename):
+    img = mpimg.imread(filename)
+    height, width = img.shape[0], img.shape[1]
+    new_img = img[:, :, 3] > 0.9
+    return new_img, width, height
+
+
+def print_map(img):
+    plt.imshow(img)
+    plt.show()
+
+def slide(x, y, x_, y_, near_border, tanj_map, contours):
+    vx, vy = x_ - x, y_ - y
+    print(int(x),int(y))
+    i, k = near_border[int(x), int(y)]
+
+    print(contours[i][k])
+    t = tanj_map[contours[i][k][0], contours[i][k][1]]
+    p = int((vx + vy * t) / np.sqrt(1 + t ** 2))
+    print(p)
+    n_x, n_y = get(contours[i], k + p)
+    if (n_x - x) * vx + (n_y - y) * vy <= 0:
+        n_x, n_y = get(contours[i], k - p)
+
+    return n_x, n_y
+
+def load_map (filename, bw = 4, b = 5):
+    map, width, height = file_to_map(filename)
+    contours = get_contour(map)
+    int_map = map.astype(int)
+    tanj_map = compute_tangeante(int_map, contours, bw = bw)
+    near_border = compute_nearest_border(int_map, contours, b = b)
+    def inner_slide (x, y, x_, y_):
+        vx, vy = x_ - x, y_ - y
+        i, k = near_border[int(x), int(y)]
+        t = tanj_map[contours[i][k][0], contours[i][k][1]]
+        p = int((vx + vy * t) / np.sqrt(1 + t ** 2))
+        n_x, n_y = get(contours[i], k + p)
+        if (n_x - x) * vx + (n_y - y) * vy <= 0:
+            n_x, n_y = get(contours[i], k - p)
+
+        return n_x, n_y
+    return map, width, height, inner_slide
+if __name__ == "__main__":
+    # new_img, width, height = file_to_map("../maps/test_img2.png")
+    new_img, width, height = file_to_map("../maps/contour_test2.png")
+
+    contours = get_contour(new_img)
+    c_map = np.zeros((height, width))
+    new_img = new_img.astype(int)
+
+    tanj_map = compute_tangeante(new_img, contours, bw=2)
+    near_contour_map = compute_nearest_border(new_img, contours, b=3)
+
+    lw = 1
+    for c in contours:
+        for k in range(len(c)):
+            new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = k + 40
+    # pp.pprint(near_contour_map[40:60,80:100])
+    # pp.pprint(tanj_map[40:60,80:100])
+
+    x, y, x_, y_ = 58,31,69,41
+    new_img[x, y] = -100
+    new_img[x_, y_] = 100
+
+    n_x, n_y = slide(x, y, x_, y_, near_contour_map, tanj_map, contours)
+    print(n_x, n_y)
+    new_img[n_x, n_y] = -200
+    new_img[60,31] = -200
+
+    print_map(new_img)
