@@ -1,5 +1,17 @@
+/* properties of the background picture of the login page and end_game page*/
+body
+{
+
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: 100%;
+
+}
+
+/* properties of the title of the login and end_game page*/
 h1
 {
+
   z-index: 2;
   font-family: Arial;
   text-align: center;
@@ -15,8 +27,10 @@ h1
   margin: auto;
   background-color: #e7e7e7;
   margin-top: 150px;
+
 }
 
+/* properties of the formulary of the login and end_game page*/
 form{
   z-index: 2;
   font-family: Arial;
