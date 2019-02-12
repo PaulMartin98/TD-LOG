@@ -28,6 +28,7 @@ server_clock = time.clock()
 last_update = server_clock
 refreshing_time = 1/120
 last_broadcast = time.clock()
+mort=False
 
 def getRandomColor():
   letters = '0123456789ABCDEF'
@@ -38,7 +39,11 @@ def getRandomColor():
 
 @app.route('/game')
 def index():
-	return render_template('client.html')
+	print(mort)
+	if mort==True:
+		redirect('/end_game')
+	else:
+		return render_template('client.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -77,6 +82,11 @@ def handle_move(id,vx,vy):
 	players[id]['vy'] = vy
 
 
+@socketio.on('out')
+def out():
+	print("aaaaaaaaaaaaaaaaaaaaaaa")
+	redirect('/end_game')
+
 @socketio.on('client_shoot')
 def handle_shoot(id,vx,vy):
 	global shoot
@@ -100,6 +110,7 @@ def players_dead():
         return render_template('end_game.html')
 
 def players_update():
+	mort=False
 	global server_clock, last_update
 	server_clock = time.clock()
 	topopbul = []
@@ -129,7 +140,8 @@ def players_update():
 	for id in topopbul:
 		bullets.pop(id, None)
 	for id in topopplay:
-		return redirect('/end_game')
+		mort=True
+		#return redirect('/end_game')
 		players.pop(id,None)
 		socketio.emit('dead', id, broadcast = True )
 		print("mort mort mort")

@@ -73,6 +73,7 @@
     socket.on('dead',function(ID){
       if (ID == id){
         alive = false ;
+	socket.emit('out');
       }
     });
 
