@@ -230,7 +230,10 @@ def players_update():
                     topopplay.append(idp)
                     teams[players[bullets[id]["player_id"]]["team"]]["score"] += 1
                     players[bullets[id]["player_id"]]["score"] += 1
-                    
+                    socketio.emit('score_update', {'score_red' : teams['red']['score'],
+                                                   'score_blue' : teams['blue']['score']},
+                                  broadcast=True )
+
     for id in topopbul:
         bullets.pop(id, None)
     for id_bonus in topopbonus:
