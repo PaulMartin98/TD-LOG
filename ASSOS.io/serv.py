@@ -21,11 +21,9 @@ dead_radius = 6
 
 players = {}
 bullets = {}
-teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0], 'score' : 0},
-         "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1] ,'score' : 0}
+teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0], 'score': 0},
+         "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1], 'score': 0}
          }
-
-
 
 server_clock = time.clock()
 last_update = server_clock
@@ -41,10 +39,15 @@ respawn_time = 5
 last_bonus_respawn = server_clock
 
 
-def spawn_bonus(bonus):
+def generate_valid_id(dict):
     id = int(time.clock() * 10 ** 5)
-    while str(id) in bonus:
+    while str(id) in dict:
         id = int(time.clock() * 10 ** 5)
+    return id
+
+
+def spawn_bonus(bonus):
+    id = generate_valid_id(bonus)
 
     x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
     while map[x, y]:
@@ -56,6 +59,7 @@ def spawn_bonus(bonus):
 
 for b in range(nb_bonus):
     spawn_bonus(bonus)
+
 
 ###########
 
@@ -117,11 +121,18 @@ def select_team():
     return t_
 
 
+def write_timefile(file, t, data, type):
+    file.write(format(t, '.10f') + ",")
+    if type == 'int':
+        file.write(str(len(data)) + "\n")
+    if type == 'float':
+        file.write(format(data, '.10f') + "\n")
+    file.flush()
+
+
 @socketio.on('new_connection')
 def handle_new_connection():
-    id = int(time.clock() * 10 ** 5)
-    while str(id) in players:
-        id = int(time.clock() * 10 ** 5)
+    id = generate_valid_id(players)
 
     team_ = select_team()
     teams[team_]["players_number"] += 1
@@ -133,8 +144,11 @@ def handle_new_connection():
                    "speed": player_speed}
     emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
-    file_p.write(format(time.clock(), '.10f') + ",")
-    file_p.write(str(len(players)) + "\n")
+
+    # file_p.write(format(time.clock(), '.10f') + ",")
+    # file_p.write(str(len(players)) + "\n")
+    write_timefile(file=file_p, t=time.clock(),
+                   data=players, type='int')
 
 
 @socketio.on('client_speed_update')
@@ -145,10 +159,7 @@ def handle_move(id, vx, vy):
 
 @socketio.on('client_shoot')
 def handle_shoot(id, vx, vy):
-
-    bullet_id = int(time.clock() * 10 ** 5)
-    while str(bullet_id) in bullets:
-        bullet_id = int(time.clock() * 10 ** 5)
+    bullet_id = generate_valid_id(bullets)
 
     bullets[bullet_id] = {"x": players[id]["x"], "y": players[id]["y"],
                           "vx": vx, "vy": vy,
@@ -206,9 +217,6 @@ def players_update():
                     players[id]["speed"] += 2
                 topopbonus.append(id_bonus)
 
-    # if players[id]["r"]<6:
-    #	topopplay.append(id)
-
     for id in bullets:
         new_x = bullets[id]["x"] + bullets[id]["vx"] * (server_clock - last_update) * bullet_speed
         new_y = bullets[id]["y"] + bullets[id]["vy"] * (server_clock - last_update) * bullet_speed
@@ -230,9 +238,9 @@ def players_update():
                     topopplay.append(idp)
                     teams[players[bullets[id]["player_id"]]["team"]]["score"] += 1
                     players[bullets[id]["player_id"]]["score"] += 1
-                    socketio.emit('score_update', {'score_red' : teams['red']['score'],
-                                                   'score_blue' : teams['blue']['score']},
-                                  broadcast=True )
+                    socketio.emit('score_update', {'score_red': teams['red']['score'],
+                                                   'score_blue': teams['blue']['score']},
+                                  broadcast=True)
 
     for id in topopbul:
         bullets.pop(id, None)
@@ -248,9 +256,8 @@ def players_update():
     # return redirect('/end_game')
     last_update = server_clock
 
-    file.write(format(server_clock, '.10f') + ",")
-    file.write(format((time.clock() - server_clock) * 1000, '.10f') + "\n")
-    file.flush()
+    write_timefile(file=file_t, t=server_clock,
+                   data=(time.clock() - server_clock) * 1000, type='float')
 
 
 @socketio.on('request_frame')
@@ -262,15 +269,18 @@ def handle_request_frame():
         last_broadcast = time.clock()
 
 
-# defining the application
-if __name__ == '__main__':
-    file = open('activity_log.txt', 'w')
+def create_history_file(filename):
+    file = open(filename, 'w')
     file.seek(0)
     file.truncate()
+    return file
 
-    file_p = open('players_connected.txt', 'w')
-    file_p.seek(0)
-    file_p.truncate()
+
+# defining the application
+
+if __name__ == '__main__':
+    file_t = create_history_file('activity_log.txt')
+    file_p = create_history_file('players_connected.txt')
 
     # app.debug = True
     print("map size : ", map_width, map_height, " : ", map_width * map_height)

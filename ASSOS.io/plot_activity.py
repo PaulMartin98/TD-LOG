@@ -25,7 +25,7 @@ figp = plt.gcf()
 figp.show()
 figp.canvas.draw()
 
-bw = 60
+bw = 50
 file =  open('activity_log.txt', 'r+')
 file_p = open('players_connected.txt',"r+")
 size = 1200
@@ -42,7 +42,8 @@ while(True):
 
     plt.clf()
     plt.plot(times[-size:-bw],kde(proc[-size:-bw],bw),color = "r")
-    plt.ylim(0)
+    plt.xlim(times[len(times)-size])
+    plt.ylim(0,0.3)
 
     new_p_data = file_p.readlines()
     l=[]
