@@ -8,16 +8,14 @@ function drawLife(rayon){
   var diff;
   var arrondi;
 
-  var vie;
+  var vie = (rayon/15)*100;
   // base life : rayon = 15 if more because of the bonus, the circle stay fully green
   if(rayon > 15){
-    vie = 100;
+    diff = Math.PI*2;
   }
   else{
-    vie = (rayon/15)*100;
+    diff = (vie/100)*Math.PI*2;
   }
-  // % of the life for the circle
-  diff = (vie/100)*Math.PI*2;
 
   // drawing a withe circle for the background
   players_ctx.beginPath();
@@ -134,22 +132,30 @@ function drawScore()
   var x = 50;
   var y = players_canvas.height-100;
   // defining a table of existing id
-  var id_best_score = [id,id,id];
+  var id_best_score = [-1,-1,-1];
+  var best_score =[-1,-1,-1];
 
   // calculating the 3 best score and updating the table id_best_score which contains the id of the 3 best players
   for (var idp in client_players)
   {
-    if(client_players[idp]["score"]>client_players[id_best_score[0]]["score"]){
+    if(client_players[idp]["score"]>best_score[0]){
       id_best_score[2] = id_best_score[1];
+      best_score[2] = best_score[1];
       id_best_score[1] = id_best_score[0];
+      best_score[1] = best_score[0];
       id_best_score[0] = idp;
+      best_score[0] = client_players[idp]["score"];
+
     }
-    else if(client_players[idp]["score"]>client_players[id_best_score[1]]["score"]){
+    else if(client_players[idp]["score"]>best_score[1]){
       id_best_score[2] = id_best_score[1];
+      best_score[2] = best_score[1];
       id_best_score[1] = idp;
+      best_score[1] = client_players[idp]["score"];
     }
-    else if(client_players[idp]["score"]>client_players[id_best_score[2]]["score"]){
+    else if(client_players[idp]["score"]>best_score[2]){
       id_best_score[2] = idp;
+      best_score[2] = client_players[idp]["score"];
     }
   }
 
@@ -157,25 +163,28 @@ function drawScore()
   players_ctx.beginPath();
   players_ctx.font = "30px Arial";
   players_ctx.fillStyle = "#0040FF";
-  players_ctx.fillText("Best Players:",x+50,y-40);
+  players_ctx.fillText("Top 3 Players:",x+50,y-40);
   players_ctx.closePath();
 
+  console.log(id_best_score);
   // writing the best scores
   for (var idp in id_best_score)
   {
-    //score of the player
-    var sc = client_players[id_best_score[idp]]["score"];
-    // string we want to write
-    var s = client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
+    if(id_best_score[idp] != -1){
+      //score of the player
+      var sc = client_players[id_best_score[idp]]["score"];
+      // string we want to write
+      var s = client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
 
-    // wrting the score on the canvas
-    players_ctx.beginPath();
-    players_ctx.font = "20px Arial";
-    players_ctx.fillStyle = "#da6210";
-    players_ctx.fillText(s,x,y);
-    players_ctx.closePath();
-    //updating the position where the score is written
-    y = y + 30;
+      // wrting the score on the canvas
+      players_ctx.beginPath();
+      players_ctx.font = "20px Arial";
+      players_ctx.fillStyle = "#da6210";
+      players_ctx.fillText(s,x,y);
+      players_ctx.closePath();
+      //updating the position where the score is written
+      y = y + 30;
+    }
   }
 }
 
