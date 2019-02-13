@@ -116,7 +116,7 @@ class game(bonus):
             self.bonus.pop(id_bonus)
     
         for id in players_to_pop:
-            self.teams[self.players[id]["team"]]["self.players_number"] -= 1
+            self.teams[self.players[id]["team"]]["players_number"] -= 1
             self.players.pop(id, None)
             socketio.emit('dead', id, broadcast=True)
         last_update = server_clock
