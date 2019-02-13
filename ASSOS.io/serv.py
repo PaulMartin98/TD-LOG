@@ -180,14 +180,17 @@ def players_dead():
         return render_template('end_game.html')
 
 def update_pos(id):
+    print(players[id]["x"],players[id]["y"])
+    assert (0<=players[id]["x"]<=map_width) and (0<=players[id]["y"]<=map_height),"player out of map"
+    assert map[int(players[id]["y"])][int(players[id]["x"])]==False,"player in obstacle"
     new_x = players[id]["x"] + players[id]["vx"] * (server_clock - last_update) * players[id]["speed"]
     new_y = players[id]["y"] + players[id]["vy"] * (server_clock - last_update) * players[id]["speed"]
     if (0 < new_y < map_height) and (0 < new_x < map_width):
         if map[int(new_y)][int(new_x)] == True:
             new_y, new_x = inner_slide(players[id]["y"], players[id]["x"], new_y, new_x)
     else:
-        new_x = max(min(new_x, map_width), 0)
-        new_y = max(min(new_y, map_height), 0)
+        new_x = max(min(new_x, map_width-1), 0)
+        new_y = max(min(new_y, map_height-1), 0)
     players[id]["x"] = new_x
     players[id]["y"] = new_y
 
@@ -202,6 +205,8 @@ def pick_bonus(id,id_bonus,topop):
         topop.append(id_bonus)
 
 def update_bullet(id,topop):
+    assert (0<bullets[id]["x"]<map_width) and (0<bullets[id]["y"]<map_height),"bullet out of map"
+    assert map[int(bullets[id]["y"])][int(bullets[id]["x"])]==False,"bullet in obstacle"
     new_x = bullets[id]["x"] + bullets[id]["vx"] * (server_clock - last_update) * bullet_speed
     new_y = bullets[id]["y"] + bullets[id]["vy"] * (server_clock - last_update) * bullet_speed
     if (0 < new_y < map_height) and \
