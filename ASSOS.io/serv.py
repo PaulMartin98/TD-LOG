@@ -10,20 +10,20 @@ from generate_map import *
 map, map_width, map_height, inner_slide = load_map("../maps/map_alpha.png")
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'scret'
-width, height = 1000, 1000
+app.config['SECRET_KEY'] = 'secret'
 socketio = SocketIO(app)
 
-speed = 3
+player_speed = 3
 bullet_speed = 8
+bigballRadius = 15
+smallballRadius = 3
+dead_radius = 6
+
 players = {}
 bullets = {}
-teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0]},
-         "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1]}
+teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0], 'score': 0},
+         "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1], 'score': 0}
          }
-
-bigballRadius = 15;
-smallballRadius = 3;
 
 server_clock = time.clock()
 last_update = server_clock
@@ -40,11 +40,20 @@ respawn_time = 5
 last_bonus_respawn = server_clock
 
 
-def spawn_bonus(bonus):
+def generate_valid_id(dict):
     id = int(time.clock() * 10 ** 5)
+    while str(id) in dict:
+        id = int(time.clock() * 10 ** 5)
+    return id
+
+
+def spawn_bonus(bonus):
+    id = generate_valid_id(bonus)
+
     x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
     while map[x, y]:
         x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
+
     type = bonus_list[random.randint(0, len(bonus_list) - 1)]
     bonus[id] = {'type': type, "x": y, "y": x}
 
@@ -113,9 +122,19 @@ def select_team():
     return t_
 
 
+def write_timefile(file, t, data, type):
+    file.write(format(t, '.10f') + ",")
+    if type == 'int':
+        file.write(str(len(data)) + "\n")
+    if type == 'float':
+        file.write(format(data, '.10f') + "\n")
+    file.flush()
+
+
 @socketio.on('new_connection')
 def handle_new_connection():
-    id = int(time.clock() * 10 ** 5)
+    id = generate_valid_id(players)
+
     team_ = select_team()
     teams[team_]["players_number"] += 1
     print("Un joueur connecte, id : " + str(id), "team : " + team_)
@@ -123,11 +142,14 @@ def handle_new_connection():
     players[id] = {"x": teams[team_]["spawn"][1], "y": teams[team_]["spawn"][0],
                    "vx": 0, "vy": 0, "r": bigballRadius, "team": team_,
                    "pseudo": session['pseudo'], "score": 0,
-                   "speed": speed}
+                   "speed": player_speed}
     emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
-    file_p.write(format(time.clock(), '.10f') + ",")
-    file_p.write(str(len(players)) + "\n")
+
+    # file_p.write(format(time.clock(), '.10f') + ",")
+    # file_p.write(str(len(players)) + "\n")
+    write_timefile(file=file_p, t=time.clock(),
+                   data=players, type='int')
 
 
 @socketio.on('client_speed_update')
@@ -143,13 +165,10 @@ def out():
 
 @socketio.on('client_shoot')
 def handle_shoot(id, vx, vy):
-    global shoot
-    shoot = True
-    bullet_id = random.randint(100, 200)
-    bullets[bullet_id] = {"x": players[id]["x"],
-                          "y": players[id]["y"],
-                          "vx": vx,
-                          "vy": vy,
+    bullet_id = generate_valid_id(bullets)
+
+    bullets[bullet_id] = {"x": players[id]["x"], "y": players[id]["y"],
+                          "vx": vx, "vy": vy,
                           "team": players[id]["team"],
                           "player_id": id}
 
@@ -184,7 +203,7 @@ def players_update():
         new_x = players[id]["x"] + players[id]["vx"] * (server_clock - last_update) * players[id]["speed"]
         new_y = players[id]["y"] + players[id]["vy"] * (server_clock - last_update) * players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):
-            if (map[int(new_y)][int(new_x)] == True):
+            if map[int(new_y)][int(new_x)] == True:
                 new_y, new_x = inner_slide(players[id]["y"], players[id]["x"], new_y, new_x)
         else:
             new_x = max(min(new_x, map_width), 0)
@@ -204,9 +223,6 @@ def players_update():
                     players[id]["speed"] += 2
                 topopbonus.append(id_bonus)
 
-    # if players[id]["r"]<6:
-    #	topopplay.append(id)
-
     for id in bullets:
         new_x = bullets[id]["x"] + bullets[id]["vx"] * (server_clock - last_update) * bullet_speed
         new_y = bullets[id]["y"] + bullets[id]["vy"] * (server_clock - last_update) * bullet_speed
@@ -224,9 +240,13 @@ def players_update():
                     (players[idp]["r"] + smallballRadius) ** 2):
                 players[idp]["r"] -= 4
                 topopbul.append(id)
-                if players[idp]["r"] < 6:
+                if players[idp]["r"] < dead_radius:
                     topopplay.append(idp)
+                    teams[players[bullets[id]["player_id"]]["team"]]["score"] += 1
                     players[bullets[id]["player_id"]]["score"] += 1
+                    socketio.emit('score_update', {'score_red': teams['red']['score'],
+                                                   'score_blue': teams['blue']['score']},
+                                  broadcast=True)
 
     for id in topopbul:
         bullets.pop(id, None)
@@ -235,16 +255,15 @@ def players_update():
 
     for id in topopplay:
         teams[players[id]["team"]]["players_number"] -= 1
+
         players.pop(id, None)
 
         socketio.emit('dead', id, broadcast=True)
     # return redirect('/end_game')
     last_update = server_clock
 
-    file.write(format(server_clock, '.10f') + ",")
-    file.write(format((time.clock() - server_clock) * 1000, '.10f') + "\n")
-    file.flush()
-
+    write_timefile(file=file_t, t=server_clock,
+                   data=(time.clock() - server_clock) * 1000, type='float')
 
 
 @socketio.on('request_frame')
@@ -256,15 +275,18 @@ def handle_request_frame():
         last_broadcast = time.clock()
 
 
-# defining the application
-if __name__ == '__main__':
-    file = open('activity_log.txt', 'w')
+def create_history_file(filename):
+    file = open(filename, 'w')
     file.seek(0)
     file.truncate()
+    return file
 
-    file_p = open('players_connected.txt', 'w')
-    file_p.seek(0)
-    file_p.truncate()
+
+# defining the application
+
+if __name__ == '__main__':
+    file_t = create_history_file('activity_log.txt')
+    file_p = create_history_file('players_connected.txt')
 
     # app.debug = True
     print("map size : ", map_width, map_height, " : ", map_width * map_height)

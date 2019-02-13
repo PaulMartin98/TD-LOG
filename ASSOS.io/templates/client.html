@@ -70,6 +70,9 @@
     var bonus_width = 40 ;
     var bonus_height = 40;
 
+    var score_red = 0;
+    var score_blue = 0;
+
     var id = -1 ;
     var socket = io.connect('http://127.0.0.1:5000');
 
@@ -90,7 +93,10 @@
         socket.emit('logout');
       }
     });
-
+    socket.on('score_update',function(scores){
+      score_red = scores['score_red'];
+      score_blue = scores['score_blue'];
+    });
 
     function compute_rendering()
     {
