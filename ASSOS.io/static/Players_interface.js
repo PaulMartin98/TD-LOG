@@ -7,9 +7,16 @@ function drawLife(rayon){
   var r = 50;
   var diff;
   var arrondi;
-  // % of the life in function of the radius of the ball
-  var vie = (rayon/15)*100;
-  // % of the life lost
+
+  var vie;
+  // base life : rayon = 15 if more because of the bonus, the circle stay fully green
+  if(rayon > 15){
+    vie = 100;
+  }
+  else{
+    vie = (rayon/15)*100;
+  }
+  // % of the life for the circle
   diff = (vie/100)*Math.PI*2;
 
   // drawing a withe circle for the background
@@ -45,14 +52,14 @@ function drawLife(rayon){
 }
 
 // function drawing the ennemies positions on the minimap, (x,y) ennemy position, (w,h) position of the top left corner of the minimap
-function drawPixel(x,y,w,h){
+function drawPixel(x,y,w,h,color){
   // calculating the position on the minimap in function of the compressing rate of the minimap ( here 159/1327)
-  var x_p = w + x*159/1327;
-  var y_p = h + y*159/1327;
+  var x_p = w + x*149/819;
+  var y_p = h + y*148/818;
 
   // drawing the pixel
   players_ctx.beginPath();
-  players_ctx.fillStyle = "#FF0000"
+  players_ctx.fillStyle = color;
   players_ctx.arc(x_p,y_p,3,0,2*Math.PI);
   players_ctx.fill();
   players_ctx.closePath();
@@ -61,15 +68,15 @@ function drawPixel(x,y,w,h){
 // drawing the minimap
 function drawMiniMap(){
   //(x,y) position of the top left corner of the minimap
-  var x = players_canvas.width-270;
+  var x = players_canvas.width-170;
   var y = players_canvas.height-170;
 
   // chargin the image
   var img = new Image();
   img.src = "img_mini.png";
   // width and height  of the picture of the minimap
-  var w = 248;
-  var h = 159;
+  var w = 149;
+  var h = 148;
 
   // drawing a white rectangle for the background
   players_ctx.beginPath();
@@ -89,19 +96,22 @@ function drawMiniMap(){
   var img = document.getElementById("source");
   players_ctx.drawImage(img,x,y);
 
-  // drawing the position of the player ( function as drawPixel but in a different color)
-  var x_p = x + personalX*159/1327;
-  var y_p = y + personalY*159/1327;
-  players_ctx.beginPath();
-  players_ctx.fillStyle = "#01DF01";
-  players_ctx.arc(x_p,y_p,3,0,2*Math.PI,false);
-  players_ctx.fill();
-  players_ctx.closePath();
 
-  // drawing the ennemies posiitons
+  // drawing the players on the minimap
   for (var id_players in client_players){
     if (id_players != id){
-      drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y);
+      // enemies in red
+      if(client_players[id_players]["team"] == client_players[id]["team"]){
+        drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#01DF01");
+      }
+      // allies in green
+      else{
+        drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#FF0000");
+      }
+    }
+    // player himself in blue
+    else{
+      drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#0000FF");
     }
   }
 }
@@ -167,4 +177,46 @@ function drawScore()
     //updating the position where the score is written
     y = y + 30;
   }
+}
+
+function drawTeamScores(){
+  var x = players_canvas.width/2 - 150;
+  var y = 40;
+  var sc_allies;
+  var sc_ennemies;
+
+  if(client_players[id]["team"] == "blue"){
+    sc_allies = score_blue;
+    sc_ennemies = score_red;
+  }
+  else{
+    sc_allies = score_red;
+    sc_ennemies = score_blue;
+  }
+  var rate;
+  if(sc_allies + sc_ennemies == 0){
+    rate = 0.5;
+  }
+  else{
+    rate = sc_allies / (sc_ennemies + sc_allies);
+  }
+
+  players_ctx.beginPath();
+  players_ctx.fillStyle = "#0000FF";
+  players_ctx.fillRect(x,y,400*rate,40);
+  players_ctx.closePath();
+
+  players_ctx.beginPath();
+  players_ctx.fillStyle = "#FF0000";
+  players_ctx.fillRect(x+400*rate,y,400*(1-rate),40);
+  players_ctx.closePath();
+
+  players_ctx.beginPath();
+  players_ctx.fillStyle = "#000000";
+  players_ctx.moveTo(x+400*rate-20,y);
+  players_ctx.lineTo(x+400*rate,y+15);
+  players_ctx.lineTo(x+400*rate+20,y);
+  players_ctx.fill();
+  players_ctx.closePath();
+
 }
