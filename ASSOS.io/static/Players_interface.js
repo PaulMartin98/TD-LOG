@@ -219,4 +219,16 @@ function drawTeamScores(){
   players_ctx.fill();
   players_ctx.closePath();
 
+  players_ctx.beginPath();
+  players_ctx.font = "30px Arial";
+  players_ctx.fillStyle = "#000000";
+  players_ctx.fillText(sc_allies.toString(),x-30,y+30);
+  players_ctx.closePath();
+
+  players_ctx.beginPath();
+  players_ctx.font = "30px Arial";
+  players_ctx.fillStyle = "#000000";
+  players_ctx.fillText(sc_ennemies.toString(),x+400+25,y+30);
+  players_ctx.closePath();
+
 }
