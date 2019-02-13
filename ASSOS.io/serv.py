@@ -157,7 +157,7 @@ class game(bonus):
 
     def update_bullet(self,id,topop):
         assert (0 < self.bullets[id]["x"] < map_width) and ( 0 < self.bullets[id]["y"] < map_height),"bullet out of map"
-        assert map[int(self.bullets[id]["y"])][self.int(bullets[id]["x"])]==False,"bullet in obstacle"
+        assert map[int(self.bullets[id]["y"])][self.int(self.bullets[id]["x"])]==False,"bullet in obstacle"
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
